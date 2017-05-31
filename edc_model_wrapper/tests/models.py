@@ -1,10 +1,11 @@
+from edc_base.model_mixins.url_mixin import UrlMixin
 __all__ = ['Example', 'ParentExample', 'ExampleLog', 'ExampleLogEntry']
 
 import uuid
 
 from django.db import models
 from edc_base.model_mixins import BaseUuidModel
-from edc_base_test.utils import get_utcnow
+from edc_base.utils import get_utcnow
 
 
 class Example(BaseUuidModel):
@@ -30,7 +31,7 @@ class ParentExample(BaseUuidModel):
 
     f3 = models.CharField(max_length=10, default=uuid.uuid4())
 
-    example = models.ForeignKey(Example)
+    fk = models.ForeignKey(Example)
 
     report_datetime = models.DateTimeField(
         default=get_utcnow)

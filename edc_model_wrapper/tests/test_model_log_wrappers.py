@@ -1,44 +1,40 @@
 from django.test import TestCase, tag
 
-from edc_base_test.utils import get_utcnow
+from edc_base.utils import get_utcnow
 
 from .models import Example, ParentExample, ExampleLog, ExampleLogEntry
-from .wrappers import ExampleModelWrapper, ExampleModelWithLogWrapper, ParentExampleModelWithLogWrapper
-
-
-@tag('wrapper')
-class TestWrapper(TestCase):
-
-    def setUp(self):
-        self.test_model = Example.objects.create(f1=5, f2=6)
-        self.wrapped_object = ExampleModelWrapper(self.test_model)
-
-    def test_model_wrapper_sets_original_object_attr(self):
-        self.assertEqual(self.wrapped_object.example, self.test_model)
-
-    def test_model_wrapper_urls(self):
-        self.assertEqual(
-            self.wrapped_object.add_url_name, 'edc-model-wrapper:admin:edc_model_wrapper_example_add')
-        self.assertEqual(
-            self.wrapped_object.change_url_name, 'edc-model-wrapper:admin:edc_model_wrapper_example_change')
-
-    def test_model_wrapper_extra_querystring(self):
-        self.assertIn(
-            'f2={}'.format(self.test_model.f2),
-            self.wrapped_object.extra_querystring)
-        self.assertIn(
-            'f3={}'.format(self.test_model.f3),
-            self.wrapped_object.extra_querystring)
-
-    def test_model_wrapper_next_url(self):
-        self.assertEqual(
-            self.wrapped_object.next_url, 'listboard_url,f1&f1=5')
+from .wrappers import ExampleModelWithLogWrapper, ParentExampleModelWithLogWrapper
+from ..wrappers import ModelWrapper
 
 
 @tag('me1')
 class TestModelWithLogWrapper(TestCase):
 
     def setUp(self):
+
+        class ExampleLogEntryModelWrapper(ModelWrapper):
+
+            model = 'edc_model_wrapper.examplelogentry'
+            next_url_attrs = {'edc_model_wrapper.examplelogentry': [
+                'example_identifier', 'example_log']}
+            querystring_attrs = {
+                'edc_model_wrapper.examplelogentry': ['f2', 'f3']}
+            url_attrs = ['example_identifier', 'example_log']
+            url_namespace = 'edc-model-wrapper'
+
+            @property
+            def example_identifier(self):
+                return self.object.example_log.example.example_identifier
+
+            @property
+            def survey(self):
+                return 'survey_one'
+
+#         class ExampleModelWithLogWrapper(ModelWithLogWrapper):
+#
+#             model_wrapper_class = ExampleModelWrapper
+#             log_entry_model_wrapper_class = ExampleLogEntryModelWrapper
+
         self.example = Example.objects.create(
             example_identifier='123456-0', f1=5, f2=6)
         self.parent_example = ParentExample.objects.create(
@@ -48,7 +44,10 @@ class TestModelWithLogWrapper(TestCase):
         ExampleLogEntry.objects.create(example_log=self.example_log)
         ExampleLogEntry.objects.create(example_log=self.example_log)
         self.example = Example.objects.get(id=self.example.id)
-        self.wrapped_object = ExampleModelWithLogWrapper(self.example)
+
+    @tag('2')
+    def test_wrapper(self):
+        self.wrapper = ExampleModelWithLogWrapper(self.example)
 
     def test_object_without_log(self):
         self.example.examplelog.delete()

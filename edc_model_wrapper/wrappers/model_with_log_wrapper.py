@@ -2,27 +2,29 @@ from django.apps import apps as django_apps
 
 from edc_base.utils import get_utcnow
 
+from ..utils import model_name_as_attr
 from .model_wrapper import ModelWrapper, ModelWrapperError
-from .utils import model_name_as_attr
-from .wrapper import Wrapper
 
 
 class ModelWithLogWrapperError(Exception):
     pass
 
 
-class ModelWithLogWrapper(Wrapper):
+class ModelWithLogWrapper:
 
     """A model wrapper that expects the given model instance to
     follow the LogEntry relational schema.
 
     For example:
         Plot->PlotLog->PlotLogEntry where Plot is the model that the
-        class is instantiated with."""
+        class is instantiated with.
+    """
 
     model_wrapper_class = None
     log_entry_model_wrapper_class = None
     log_model_names = []  # default is xxx_log, xxx_log_entry
+    extra_querystring_attrs = {}
+    url_instance_attrs = []
 
     # if model and parent to the log model are not the same, define parent here.
     # for example, model = HouseholdStructure but parent to HouseholdLog

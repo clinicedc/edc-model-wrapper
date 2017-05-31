@@ -1,14 +1,4 @@
-from ..model_wrapper import ModelWrapper
-from ..model_with_log_wrapper import ModelWithLogWrapper
-
-
-class ExampleModelWrapper(ModelWrapper):
-
-    model_name = 'edc_model_wrapper.example'
-    next_url_attrs = {'edc_model_wrapper.example': ['f1']}
-    extra_querystring_attrs = {'edc_model_wrapper.example': ['f2', 'f3']}
-    url_instance_attrs = ['f1', 'f2', 'f3']
-    url_namespace = 'edc-model-wrapper'
+from ..wrappers import ModelWrapper, ModelWithLogWrapper
 
 
 class ParentExampleModelWrapper(ModelWrapper):
