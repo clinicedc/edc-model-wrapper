@@ -3,7 +3,7 @@ import uuid
 from urllib import parse
 from django.test import TestCase, tag
 
-from ..next_url_parser import NextUrlParser, NextUrlError, Keywords
+from ..parsers import NextUrlParser, NextUrlError, Keywords
 
 
 class DummyObj:

@@ -1,13 +1,23 @@
-from django.apps import apps as django_apps
 
 from edc_base.utils import get_utcnow
 
 from ..utils import model_name_as_attr
+from .model_relations import ModelRelations
 from .model_wrapper import ModelWrapper, ModelWrapperError
 
 
 class ModelWithLogWrapperError(Exception):
     pass
+
+
+class LogModelRelations(ModelRelations):
+
+    def __init__(self, model_obj=None):
+        schema = [
+            model_obj._meta.object_name.lower(),
+            f'{model_obj._meta.object_name.lower()}_log',
+            f'{model_obj._meta.object_name.lower()}_log_entry']
+        super().__init__(model_obj=model_obj, schema=schema)
 
 
 class ModelWithLogWrapper:
@@ -20,88 +30,33 @@ class ModelWithLogWrapper:
         class is instantiated with.
     """
 
-    model_wrapper_class = None
-    log_entry_model_wrapper_class = None
-    log_model_names = []  # default is xxx_log, xxx_log_entry
-    extra_querystring_attrs = {}
-    url_instance_attrs = []
+    model_wrapper_cls = ModelWrapper
+    log_model_wrapper_cls = ModelWrapper
+    log_entry_model_wrapper_cls = ModelWrapper
+    model_relations_cls = LogModelRelations
 
     # if model and parent to the log model are not the same, define parent here.
     # for example, model = HouseholdStructure but parent to HouseholdLog
     #   is Household, not HousholdStructure.
     # Note: parent and model must be related
-    parent_model_wrapper_class = None
     parent_lookup = None
     log_model_attr_prefix = None
     log_model_app_label = None  # if different from parent
 
-    def __init__(self, obj, report_datetime=None):
-        super().__init__(obj)
-        self._parent = None
-        self.log = None
-        self.log_entry = None
-        self.log_entries = None
+    def __init__(self, model_obj=None, report_datetime=None):
+        self.object = model_obj
+        model_relations = self.model_relations_cls(model_obj=model_obj)
+        self.log = self.model_wrapper_cls(model_obj=model_relations.log)
+        self.log_model = model_relations.log_model
+        self.log_entry = self.model_wrapper_cls(model_obj=model_relations.log)
+        self.log_entry_model = model_relations.log_model
+        self.log_model_names = model_relations.model_names
 
-        if not obj:
-            raise ModelWithLogWrapperError('Null objects cannot be wrapped.')
-        if self._original_object._meta.label_lower != self.model_wrapper_class.model_name:
-            raise ModelWithLogWrapperError('\'{}\' expected \'{}\'. Got \'{}\' instead.'.format(
-                self.__class__.__name__,
-                self.model_wrapper_class.model_name,
-                self._original_object._meta.label_lower))
-
-        # generate rel names, label_lower, assuming we
-        # followed <parent>_log, <parent>_log_entry naming
-        # in the model classes
-        if not self.log_model_names:
-            log_model_app_label = self.log_model_app_label or obj._meta.app_label
-            log_model_attr_prefix = self.log_model_attr_prefix or self.parent._original_object._meta.model_name
-            self.log_model_names = [
-                '{}.{}log'.format(log_model_app_label, log_model_attr_prefix),
-                '{}.{}logentry'.format(log_model_app_label, log_model_attr_prefix)]
-
-        # lookup log and log entry models using the
-        # assumed "label_lower" from above
-        try:
-            self.log_model = django_apps.get_model(
-                *self.log_model_names[0].split('.'))
-            self.log_entry_model = django_apps.get_model(
-                *self.log_model_names[1].split('.'))
-        except LookupError as e:
-            raise ModelWithLogWrapperError(
-                '{} Assumed \'{}\' has a foreignkey to the log model. '
-                'Using {} to generate model names. log_model_attr_prefix={}'.format(
-                    e, self.parent._original_object._meta.label_lower,
-                    self.log_model_attr_prefix or self.parent._original_object._meta.label_lower,
-                    self.log_model_attr_prefix))
-
-        # get the log instance from parent instance.
-        # log instance must exist. usually created in
-        # signal on parent post_save
-        try:
-            self.log = ModelWrapper(
-                getattr(self.parent._original_object,
-                        self.log_model._meta.model_name),
-                model_name=self.log_model._meta.label_lower)
-        except AttributeError as e:
-            raise ModelWithLogWrapperError(
-                'Could not get Log instance from parent. Got {} '
-                'Using parent=\'{}\', log field name=\'{}\', '
-                'parent_lookup={}.'.format(
-                    e, self.parent._original_object._meta.label_lower,
-                    self.log_model._meta.model_name,
-                    self.parent_lookup))
-
-        setattr(self, model_name_as_attr(obj),
-                self.model_wrapper_class(obj).wrapped_object)
         self.prepare_log_entries(report_datetime=report_datetime)
-        # self.wrap_log_entry_objects()
 
     def __repr__(self):
-        return '{0}(<{1}: {2} id={3}>)'.format(
-            self.__class__.__name__,
-            self._original_object.__class__.__name__,
-            self._original_object, self._original_object.id)
+        return (f'{self.__class__.__name__}(<{self.object.__class__.__name__}: '
+                f'{self.object} id={self.object.id}>)')
 
     @property
     def parent(self):
@@ -115,9 +70,7 @@ class ModelWithLogWrapper:
                 self._parent = parent
             else:
                 self._parent = self._original_object  # e.g. Plot
-                parent_model_wrapper_class = (
-                    self.parent_model_wrapper_class or self.model_wrapper_class)
-            self._parent = parent_model_wrapper_class(self._parent)
+            self._parent = self.model_wrapper_class(self._parent)
         return self._parent
 
     @property
@@ -134,7 +87,7 @@ class ModelWithLogWrapper:
         # wrap the log entries, if there are any
         objs = []
         for obj in self.log_entries.all().order_by('-report_datetime'):
-            objs.append(self.log_entry_model_wrapper_class(obj))
+            objs.append(self.log_entry_model_wrapper_cls(obj))
         self.log_entries = objs
 
     def get_current_log_entry(self, report_datetime=None):
@@ -164,14 +117,14 @@ class ModelWithLogWrapper:
                 report_datetime=report_datetime)
             if log_entry:
                 # wrap the current log entry
-                self.log_entry = self.log_entry_model_wrapper_class(log_entry)
+                self.log_entry = self.log_entry_model_wrapper_cls(log_entry)
             else:
                 self.log_entry = self.new_wrapped_log_entry(log_field_attr)
 
             log_entries = []
             for log_entry in self.log_entries.all().order_by('report_datetime'):
                 log_entries.append(
-                    self.log_entry_model_wrapper_class(log_entry))
+                    self.log_entry_model_wrapper_cls(log_entry))
             self.log_entries = log_entries
 
     def new_wrapped_log_entry(self, log_field_attr):
@@ -180,4 +133,4 @@ class ModelWithLogWrapper:
             **{log_field_attr: self.log._original_object})
         new_obj.save = ModelWrapperError
         new_obj.save_base = ModelWrapperError
-        return self.log_entry_model_wrapper_class(new_obj)
+        return self.log_entry_model_wrapper_cls(new_obj)

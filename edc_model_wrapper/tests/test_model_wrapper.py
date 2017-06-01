@@ -40,6 +40,7 @@ class TestFields(TestCase):
 @tag('model_wrapper')
 class TestModelWrapper(TestCase):
 
+    @tag('1')
     def test_model_wrapper(self):
         """Asserts can construct.
         """
@@ -83,7 +84,6 @@ class TestModelWrapper(TestCase):
             ModelWrapper, model_obj=Example(), model='blah', next_url_name='thenexturl')
 
 
-@tag('1')
 class TestExampleWrappers(TestCase):
 
     def setUp(self):

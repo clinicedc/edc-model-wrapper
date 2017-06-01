@@ -58,7 +58,8 @@ The original object is accessible, if needed:
     '2017-06-01 15:04:41.760296'
     
     >>> wrapper.object.report_datetime
-    datetime.datetime(2017, 6, 1, 15, 4, 55, 594512)    
+    datetime.datetime(2017, 6, 1, 15, 4, 55, 594512)
+        
  
 
 

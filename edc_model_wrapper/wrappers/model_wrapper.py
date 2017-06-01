@@ -1,9 +1,8 @@
 from django.apps import apps as django_apps
 from urllib import parse
 
-from ..next_url_parser import NextUrlParser
+from ..parsers import NextUrlParser, Keywords
 from .fields import Fields
-from edc_model_wrapper.next_url_parser import Keywords
 
 
 class ModelWrapperError(Exception):
@@ -40,7 +39,7 @@ class ModelWrapper:
         this:
             model_wrapper.created
 
-    * wrapped_object: The wrapped model instance. Will include URLs
+    * object: The wrapped model instance. Will include URLs
         and any other attrs that the wrapper is configured to add.
     * """
 
@@ -49,23 +48,25 @@ class ModelWrapper:
     url_namespace = None
     next_url_parser_cls = NextUrlParser
     next_url_name = None
-    next_url_attrs = None
-    querystring_attrs = None
-    model = None
+    next_url_attrs = []
+    querystring_attrs = []
+    model = None  # class or label_lower
 
     def __init__(self, model_obj=None, model=None, next_url_name=None,
                  next_url_attrs=None, querystring_attrs=None, url_namespace=None, **kwargs):
 
         self.object = model_obj
+        self.model = model or self.model
+        self.fields = self.fields_cls(
+            model_obj=self.object, model=self.model, **kwargs).fields
+
         self.url_namespace = url_namespace or self.url_namespace
+        self.querystring_attrs = querystring_attrs or self.querystring_attrs
         self.next_url_parser = self.next_url_parser_cls(
             url_name=next_url_name or self.next_url_name,
             url_args=next_url_attrs or self.next_url_attrs,
             url_namespace=self.url_namespace,
             ** kwargs)
-        self.model = model or self.model
-        self.fields = self.fields_cls(
-            model_obj=self.object, model=self.model, **kwargs).fields
         # assert model obj can only be wrapped once.
         try:
             assert not self.object.wrapped
@@ -95,9 +96,7 @@ class ModelWrapper:
         self.get_absolute_url = self.object.get_absolute_url
         self.admin_url_name = f'{self.url_namespace}:{self.object.admin_url_name}'
         keywords = self.keywords_cls(
-            objects=[self],
-            attrs=querystring_attrs or self.querystring_attrs,
-            **kwargs)
+            objects=[self], attrs=self.querystring_attrs, **kwargs)
         self.querystring = parse.urlencode(keywords, encoding='utf-8')
         self.object.wrapped = True
         self.object.save = None
