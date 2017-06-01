@@ -2,7 +2,7 @@
 from edc_base.utils import get_utcnow
 
 from ..utils import model_name_as_attr
-from .model_relations import ModelRelations
+from .model_relation import ModelRelation
 from .model_wrapper import ModelWrapper, ModelWrapperError
 
 
@@ -10,14 +10,15 @@ class ModelWithLogWrapperError(Exception):
     pass
 
 
-class LogModelRelations(ModelRelations):
+class LogModelRelation(ModelRelation):
 
-    def __init__(self, model_obj=None):
+    def __init__(self, model_obj=None, log_entry_ordering='-report_datetime', **kwargs):
         schema = [
             model_obj._meta.object_name.lower(),
             f'{model_obj._meta.object_name.lower()}_log',
             f'{model_obj._meta.object_name.lower()}_log_entry']
-        super().__init__(model_obj=model_obj, schema=schema)
+        super().__init__(model_obj=model_obj, schema=schema,
+                         log_entry_ordering=log_entry_ordering)
 
 
 class ModelWithLogWrapper:
@@ -33,7 +34,7 @@ class ModelWithLogWrapper:
     model_wrapper_cls = ModelWrapper
     log_model_wrapper_cls = ModelWrapper
     log_entry_model_wrapper_cls = ModelWrapper
-    model_relations_cls = LogModelRelations
+    model_relation_cls = LogModelRelation
 
     # if model and parent to the log model are not the same, define parent here.
     # for example, model = HouseholdStructure but parent to HouseholdLog
@@ -43,16 +44,33 @@ class ModelWithLogWrapper:
     log_model_attr_prefix = None
     log_model_app_label = None  # if different from parent
 
-    def __init__(self, model_obj=None, report_datetime=None):
+    def __init__(self, model_obj=None, next_url_name=None, report_datetime=None, **kwargs):
         self.object = model_obj
-        model_relations = self.model_relations_cls(model_obj=model_obj)
-        self.log = self.model_wrapper_cls(model_obj=model_relations.log)
-        self.log_model = model_relations.log_model
-        self.log_entry = self.model_wrapper_cls(model_obj=model_relations.log)
-        self.log_entry_model = model_relations.log_model
-        self.log_model_names = model_relations.model_names
+        self.object_model = model_obj.__class__
 
-        self.prepare_log_entries(report_datetime=report_datetime)
+        relation = self.model_relation_cls(model_obj=model_obj, **kwargs)
+
+        self.log_model = relation.log_model
+        self.log = self.log_model_wrapper_cls(
+            model_obj=relation.log,
+            model=self.log_model,
+            next_url_name=next_url_name, **kwargs)
+
+        self.log_entry_model = relation.log_entry_model
+        self.log_entry = self.log_entry_model_wrapper_cls(
+            model_obj=relation.log_entry,
+            model=self.log_entry_model,
+            next_url_name=next_url_name, **kwargs)
+
+        self.log_entries = []
+        for log_entry in relation.log_entries:
+            wrapped = self.log_entry_model_wrapper_cls(
+                model_obj=log_entry,
+                model=self.log_entry_model,
+                next_url_name=next_url_name, **kwargs)
+            self.log_entries.append(wrapped)
+
+        self.log_model_names = relation.model_names
 
     def __repr__(self):
         return (f'{self.__class__.__name__}(<{self.object.__class__.__name__}: '
@@ -72,65 +90,3 @@ class ModelWithLogWrapper:
                 self._parent = self._original_object  # e.g. Plot
             self._parent = self.model_wrapper_class(self._parent)
         return self._parent
-
-    @property
-    def log_rel_attrs(self):
-        """Converts model instance names to there reverse relation names."""
-        # remove 'app_label'
-        fields = [f.split('.')[1] for f in self.log_model_names]
-        # last is a queryset
-        fields = fields[:-1] + [fields[-1:][0] + '_set']
-        return fields
-
-    def wrap_log_entries(self):
-        """Wraps the log entry and all instances in log_entries."""
-        # wrap the log entries, if there are any
-        objs = []
-        for obj in self.log_entries.all().order_by('-report_datetime'):
-            objs.append(self.log_entry_model_wrapper_cls(obj))
-        self.log_entries = objs
-
-    def get_current_log_entry(self, report_datetime=None):
-        report_datetime = report_datetime or get_utcnow()
-        return self.log_entries.filter(
-            report_datetime__date=report_datetime.date()).order_by(
-                'report_datetime').last()
-
-    def prepare_log_entries(self, report_datetime=None):
-        """Sets attrs on self for model, log, log_entry.
-
-        For example, self.plot, self.log, self.log_entries, self.log_entry."""
-        log_field_attr = model_name_as_attr(self.log._original_object)
-
-        self.log_entries = getattr(
-            self.log._original_object,
-            self.log_entry_model._meta.model_name + '_set')
-
-        if self.log_entries.all().count() == 0:
-
-            self.log_entries = []
-            self.log_entry = self.new_wrapped_log_entry(log_field_attr)
-
-        else:
-
-            log_entry = self.get_current_log_entry(
-                report_datetime=report_datetime)
-            if log_entry:
-                # wrap the current log entry
-                self.log_entry = self.log_entry_model_wrapper_cls(log_entry)
-            else:
-                self.log_entry = self.new_wrapped_log_entry(log_field_attr)
-
-            log_entries = []
-            for log_entry in self.log_entries.all().order_by('report_datetime'):
-                log_entries.append(
-                    self.log_entry_model_wrapper_cls(log_entry))
-            self.log_entries = log_entries
-
-    def new_wrapped_log_entry(self, log_field_attr):
-        """Returns a wrapped log entry, un-saved and disabled."""
-        new_obj = self.log_entry_model(
-            **{log_field_attr: self.log._original_object})
-        new_obj.save = ModelWrapperError
-        new_obj.save_base = ModelWrapperError
-        return self.log_entry_model_wrapper_cls(new_obj)

@@ -53,7 +53,8 @@ class ModelWrapper:
     model = None  # class or label_lower
 
     def __init__(self, model_obj=None, model=None, next_url_name=None,
-                 next_url_attrs=None, querystring_attrs=None, url_namespace=None, **kwargs):
+                 next_url_attrs=None, querystring_attrs=None,
+                 url_namespace=None, **kwargs):
 
         self.object = model_obj
         self.model = model or self.model

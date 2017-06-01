@@ -1,6 +1,6 @@
 from django.test import TestCase, tag
 
-from ..wrappers import ModelRelations
+from ..wrappers import ModelRelation
 from .models import Example, ExampleLog, ExampleLogEntry
 
 
@@ -14,7 +14,7 @@ class TestModelRealtions(TestCase):
 
     @tag('1')
     def test_model_relations_by_schema(self):
-        model_relations = ModelRelations(
+        model_relations = ModelRelation(
             model_obj=self.example,
             schema=['example', 'example_log', 'example_log_entry'])
         self.assertEqual(model_relations.log_model, ExampleLog)
@@ -22,7 +22,7 @@ class TestModelRealtions(TestCase):
 
     @tag('1')
     def test_model_relations_by_schema2(self):
-        model_relations = ModelRelations(
+        model_relations = ModelRelation(
             model_obj=self.example,
             schema=['example', 'example_log', 'example_log_entry'])
         self.assertIsInstance(model_relations.log, ExampleLog)
@@ -30,7 +30,7 @@ class TestModelRealtions(TestCase):
 
     @tag('1')
     def test_model_relations_by_schema3(self):
-        model_relations = ModelRelations(
+        model_relations = ModelRelation(
             model_obj=self.example,
             schema=['example', 'edc_model_wrapper.example_log', 'edc_model_wrapper.example_log_entry'])
         self.assertIsInstance(model_relations.log, ExampleLog)

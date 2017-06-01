@@ -1,14 +1,16 @@
 from django.apps import apps as django_apps
+from django.core.exceptions import MultipleObjectsReturned
 
 
-class ModelRelations:
+class ModelRelation:
     """
     schema_attrs: a list of field attr, for example:
         The schema plot->plot_log->plot_log_entry would be
              schema_attrs=['plot', 'plot_log', 'plot_log_entry']
     """
 
-    def __init__(self, model_obj=None, schema=None, **kwargs):
+    def __init__(self, model_obj=None, schema=None, log_entry_ordering=None, **kwargs):
+        self.log_entry_ordering = log_entry_ordering
         self.model_obj = model_obj
         self.models = [model_obj.__class__]
         self.model_names = []
@@ -21,13 +23,26 @@ class ModelRelations:
                 key = key.split('.')[1]
             cls = django_apps.get_model(*label_lower.split('.'))
             self.models.append(cls)
-            obj = cls.objects.get(**{parent_key: parent_obj})
+            try:
+                obj = cls.objects.get(**{parent_key: parent_obj})
+            except cls.DoesNotExist:
+                obj = cls(**{parent_key: parent_obj})
+            except MultipleObjectsReturned:
+                obj = cls.objects.filter(
+                    **{parent_key: parent_obj}).order_by(
+                        self.log_entry_ordering)[0]
+                # obj.save = ModelWrapperError
+                # obj.save_base = ModelWrapperError
+
             setattr(self, f'{key.replace(f"{schema[0]}_", "")}_model', cls)
             setattr(self, key.replace(f'{schema[0]}_', ''), obj)
             parent_key = key
             parent_obj = obj
         for model in self.models:
             self.model_names.append(model._meta.label_lower)
+        self.log_entries = getattr(
+            self.log, self.log_entry_model._meta.model_name + '_set'
+        ).all().order_by('report_datetime')
 
     def get_label_lower(self, key):
         label_lower = key

@@ -1,3 +1,4 @@
+from datetime import timedelta
 from django.test import TestCase, tag
 
 from edc_base.utils import get_utcnow
@@ -56,8 +57,104 @@ class TestModelWithLogWrapper(TestCase):
         pass
 
     @tag('1')
-    def test_wrapper(self):
-        self.wrapper = ModelWithLogWrapper(model_obj=None)
+    def test_wrapper_object(self):
+        example = Example.objects.create()
+        wrapper = ModelWithLogWrapper(
+            model_obj=example, next_url_name='listboard')
+        self.assertEqual(wrapper.object, example)
+
+    @tag('1')
+    def test_wrapper_log(self):
+        example = Example.objects.create()
+        log = ExampleLog.objects.create(example=example)
+        wrapper = ModelWithLogWrapper(
+            model_obj=example, next_url_name='listboard')
+        self.assertEqual(wrapper.log.object.example, log.example)
+
+    @tag('1')
+    def test_wrapper_log_entry(self):
+        example = Example.objects.create()
+        log = ExampleLog.objects.create(example=example)
+        log_entry = ExampleLogEntry.objects.create(example_log=log)
+        wrapper = ModelWithLogWrapper(
+            model_obj=example, next_url_name='listboard')
+        self.assertEqual(
+            wrapper.log_entry.object.example_log,
+            log_entry.example_log)
+
+    @tag('1')
+    def test_wrapper_fills_log_entry(self):
+        """Asserts adds a non-persisted instance of log entry
+        if a persisted one does not exist.
+        """
+        example = Example.objects.create()
+        example_log = ExampleLog.objects.create(example=example)
+        wrapper = ModelWithLogWrapper(
+            model_obj=example, next_url_name='listboard')
+        self.assertIsNone(wrapper.log_entry.object.id)
+        self.assertEqual(
+            example_log,
+            wrapper.log_entry.object.example_log)
+
+    @tag('1')
+    def test_wrapper_fills_log(self):
+        """Asserts adds a non-persisted instance of log
+        if a persisted one does not exist.
+        """
+        example = Example.objects.create()
+        wrapper = ModelWithLogWrapper(
+            model_obj=example, next_url_name='listboard')
+        self.assertIsNone(wrapper.log.object.id)
+        self.assertEqual(example, wrapper.log.object.example)
+
+    @tag('1')
+    def test_wrapper_fills_log_and_logentry(self):
+        """Asserts adds a non-persisted instance of log and log entry
+        if a persisted ones do not exist.
+        """
+        example = Example.objects.create()
+        wrapper = ModelWithLogWrapper(
+            model_obj=example, next_url_name='listboard')
+        self.assertIsNone(wrapper.log.object.id)
+        self.assertIsNone(wrapper.log_entry.object.id)
+
+    @tag('1')
+    def test_wrapper_no_entries(self):
+        example = Example.objects.create()
+        ExampleLog.objects.create(example=example)
+        wrapper = ModelWithLogWrapper(
+            model_obj=example, next_url_name='listboard')
+        self.assertEqual(wrapper.log_entries, [])
+
+    @tag('1')
+    def test_wrapper_multpile_log_entries(self):
+        example = Example.objects.create()
+        example_log = ExampleLog.objects.create(example=example)
+        ExampleLogEntry.objects.create(example_log=example_log)
+        ExampleLogEntry.objects.create(example_log=example_log)
+        ExampleLogEntry.objects.create(example_log=example_log)
+        wrapper = ModelWithLogWrapper(
+            model_obj=example, next_url_name='listboard')
+        self.assertEqual(len(wrapper.log_entries), 3)
+
+    @tag('1')
+    def test_wrapper_picks_first_log_entry(self):
+        example = Example.objects.create()
+        example_log = ExampleLog.objects.create(example=example)
+        report_datetime = get_utcnow() - timedelta(days=1)
+        ExampleLogEntry.objects.create(
+            example_log=example_log,
+            report_datetime=get_utcnow() - timedelta(days=3))
+        ExampleLogEntry.objects.create(
+            example_log=example_log,
+            report_datetime=get_utcnow() - timedelta(days=2))
+        ExampleLogEntry.objects.create(
+            example_log=example_log,
+            report_datetime=report_datetime)
+        wrapper = ModelWithLogWrapper(
+            model_obj=example, next_url_name='listboard')
+        self.assertEqual(
+            wrapper.log_entry.object.report_datetime, report_datetime)
 
 
 class TestModelWithLogWrapper2(TestCase):
@@ -67,7 +164,7 @@ class TestModelWithLogWrapper2(TestCase):
         class ExampleModelWithLogWrapper(ModelWithLogWrapper):
 
             model_wrapper_class = ExampleModelWrapper
-            log_entry_model_wrapper_class = ExampleLogEntryModelWrapper
+            log_entry_model_wrapper_cls = ExampleLogEntryModelWrapper
 
         self.model_log_wrapper_cls = ExampleModelWithLogWrapper
 
