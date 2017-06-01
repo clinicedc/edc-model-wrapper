@@ -1,5 +1,4 @@
 from collections import OrderedDict
-from django.urls.base import reverse
 from urllib import parse
 
 

@@ -31,15 +31,15 @@ Get the admin url
     '/admin/edc_model_wrapper/example/add/'
     
 
-All field attrs exist on the wrapper, except foreignkeys:
+All field attrs are converted to string and added to the wrapper, except foreignkeys:
 
     >>> wrapper.f1
     1
     >>> wrapper.f2
     2
+
     
-    
-Custom methods:
+Custom methods/properties are, of course, available:
 
     >>> wrapper.hello()
     'hello'
@@ -51,7 +51,14 @@ The original object is accessible, if needed:
 
     >>> wrapper.object
     <Example>
+
+... for example to access original field values:
+
+    >>> wrapper.report_datetime
+    '2017-06-01 15:04:41.760296'
     
+    >>> wrapper.object.report_datetime
+    datetime.datetime(2017, 6, 1, 15, 4, 55, 594512)    
  
 
 
