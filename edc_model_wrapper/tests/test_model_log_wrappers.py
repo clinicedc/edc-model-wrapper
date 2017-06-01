@@ -53,10 +53,6 @@ class ParentExampleModelWithLogWrapper(ModelWithLogWrapper):
 class TestModelWithLogWrapper(TestCase):
 
     @tag('1')
-    def test_wrapper_determines_relations(self):
-        pass
-
-    @tag('1')
     def test_wrapper_object(self):
         example = Example.objects.create()
         wrapper = ModelWithLogWrapper(
@@ -157,124 +153,29 @@ class TestModelWithLogWrapper(TestCase):
             wrapper.log_entry.object.report_datetime, report_datetime)
 
 
-class TestModelWithLogWrapper2(TestCase):
+class TestModelWithLogWrapperUrls(TestCase):
 
-    def setUp(self):
-
-        class ExampleModelWithLogWrapper(ModelWithLogWrapper):
-
-            model_wrapper_class = ExampleModelWrapper
-            log_entry_model_wrapper_cls = ExampleLogEntryModelWrapper
-
-        self.model_log_wrapper_cls = ExampleModelWithLogWrapper
-
-        self.example = Example.objects.create(
-            example_identifier='123456-0', f1=5, f2=6)
-        self.parent_example = ParentExample.objects.create(
-            example=self.example)
-        self.example_log = ExampleLog.objects.create(example=self.example)
-        ExampleLogEntry.objects.create(example_log=self.example_log)
-        ExampleLogEntry.objects.create(example_log=self.example_log)
-        ExampleLogEntry.objects.create(example_log=self.example_log)
-        self.example = Example.objects.get(id=self.example.id)
-
-    def test_wrapper(self):
-        self.wrapper = self.model_log_wrapper_cls(self.example)
-
-    def test_object_without_log(self):
-        self.example.examplelog.delete()
-        self.example = Example.objects.get(id=self.example.id)
-        self.wrapped_object = ExampleModelWithLogWrapper(self.example)
-        self.assertIsNotNone(self.wrapped_object.log_entry_model)
-        self.assertIsNotNone(self.wrapped_object.log_model)
-        self.assertIsNotNone(self.wrapped_object.log_model_names)
-
-    def test_object_with_log_only(self):
-        self.example.examplelog.examplelogentry_set.all().delete()
-        self.example = Example.objects.get(id=self.example.id)
-        self.wrapped_object = ExampleModelWithLogWrapper(self.example)
-        self.assertIsNotNone(self.wrapped_object.log_entry_model)
-        self.assertIsNotNone(self.wrapped_object.log_model)
-        self.assertIsNotNone(self.wrapped_object.log_model_names)
-        self.assertIsNotNone(self.wrapped_object.log)
-        self.assertIsNotNone(self.wrapped_object.log_entry)
-        self.assertTrue(self.wrapped_object.log_entry._mocked_object)
-
-    def test_object_with_log_entry(self):
-        self.assertIsNotNone(self.wrapped_object.log_entry_model)
-        self.assertIsNotNone(self.wrapped_object.log_model)
-        self.assertIsNotNone(self.wrapped_object.log_model_names)
-        self.assertIsNotNone(self.wrapped_object.log)
-        self.assertIsNotNone(self.wrapped_object.log_entry)
-        self.assertTrue(self.wrapped_object.log_entry._mocked_object)
-
-    def test_object_with_current_log_entry(self):
-        self.wrapped_object = ExampleModelWithLogWrapper(
-            self.example, report_datetime=get_utcnow())
-        self.assertIsNotNone(self.wrapped_object.log_entry_model)
-        self.assertIsNotNone(self.wrapped_object.log_model)
-        self.assertIsNotNone(self.wrapped_object.log_model_names)
-        self.assertIsNotNone(self.wrapped_object.log)
-        self.assertIsNotNone(self.wrapped_object.log_entry)
-        try:
-            self.wrapped_object.log_entry._mocked_object
-            self.fail('Unexpected got a mocked log entry object')
-        except AttributeError:
-            pass
-
+    @tag('2')
+    def test_wrapper_urls(self):
+        example = Example.objects.create()
+        example_log = ExampleLog.objects.create(example=example)
+        wrapper = ModelWithLogWrapper(
+            model_obj=example, next_url_name='listboard')
         self.assertIn(
-            'example_log={}'.format(self.example.examplelog.id),
-            self.wrapped_object.log_entry.next_url)
-
+            'example_log={}'.format(example_log.id),
+            wrapper.log_entry.next_url)
         self.assertIn(
             'listboard_url',
-            self.wrapped_object.log_entry.next_url.split('&')[0])
+            wrapper.log_entry.next_url.split('&')[0])
 
         self.assertIn(
             'example_log',
-            self.wrapped_object.log_entry.next_url.split('&')[0])
+            wrapper.log_entry.next_url.split('&')[0])
 
         self.assertIn(
             'example_identifier',
-            self.wrapped_object.log_entry.next_url.split('&')[0])
+            wrapper.log_entry.next_url.split('&')[0])
 
         self.assertIn(
             'example_identifier={}'.format(self.example.example_identifier),
-            self.wrapped_object.log_entry.next_url)
-
-    def test_object_with_different_parent_and_model(self):
-        self.wrapped_object = ParentExampleModelWithLogWrapper(
-            self.parent_example, report_datetime=get_utcnow())
-        self.assertIsNotNone(self.wrapped_object.log_entry_model)
-        self.assertIsNotNone(self.wrapped_object.log_model)
-        self.assertIsNotNone(self.wrapped_object.log_model_names)
-        self.assertIsNotNone(self.wrapped_object.log)
-        self.assertIsNotNone(self.wrapped_object.log_entry)
-        self.assertIsNotNone(self.wrapped_object.parent)
-        self.assertEqual(self.wrapped_object.parent.id,
-                         str(self.parent_example.example.id))
-        try:
-            self.wrapped_object.log_entry._mocked_object
-            self.fail('Unexpected got a mocked log entry object')
-        except AttributeError:
-            pass
-
-        self.assertIn(
-            'example_log={}'.format(self.example.examplelog.id),
-            self.wrapped_object.log_entry.next_url)
-
-        self.assertIn(
-            'listboard_url',
-            self.wrapped_object.log_entry.next_url.split('&')[0])
-
-        self.assertIn(
-            'example_log',
-            self.wrapped_object.log_entry.next_url.split('&')[0])
-
-        self.assertIn(
-            'example_identifier',
-            self.wrapped_object.log_entry.next_url.split('&')[0])
-
-        self.assertIn(
-            'example_identifier={}'.format(self.example.example_identifier),
-            self.wrapped_object.log_entry.next_url)
+            wrapper.log_entry.next_url)
