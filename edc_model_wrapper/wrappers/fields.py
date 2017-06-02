@@ -7,6 +7,10 @@ class FieldWrapperError(Exception):
     pass
 
 
+class FieldWrapperModelError(Exception):
+    pass
+
+
 class Fields:
 
     def __init__(self, model_obj=None, model=None, **kwargs):
@@ -16,8 +20,8 @@ class Fields:
                 f'Got {model_obj}')
         try:
             label_lower = model._meta.label_lower
-        except AttributeError:
-            label_lower = model
+        except AttributeError as e:
+            raise FieldWrapperModelError(f'{e}. Got {model}.')
         if label_lower != model_obj._meta.label_lower:
             raise FieldWrapperError(
                 f'Expected model \'{label_lower}\'. Got a model instance '

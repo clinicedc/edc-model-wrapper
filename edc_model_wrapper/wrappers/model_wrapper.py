@@ -69,6 +69,7 @@ class ModelWrapper:
             pass
         except ValueError as e:
             raise ModelWrapperModelError(f'{e}. Got model={model}.')
+
         self.fields = self.fields_cls(
             model_obj=self.object, model=self.model, **kwargs).fields
 

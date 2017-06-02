@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.test import TestCase, tag
 
-from ..wrappers import Fields, FieldWrapperError
+from ..wrappers import Fields, FieldWrapperError, FieldWrapperModelError
 from ..wrappers import ModelWrapper, ModelWrapperObjectAlreadyWrapped, ModelWrapperModelError
 from .models import Example, ParentExample
 
@@ -16,16 +16,13 @@ class TestFields(TestCase):
 
     def test_fields_only_except_model(self):
         self.assertRaises(
-            FieldWrapperError, Fields, model_obj=1, model=Example._meta.label_lower)
+            FieldWrapperError, Fields, model_obj=1, model=Example)
 
     def test_fields_only_except_models_with_name(self):
         self.assertRaises(
-            FieldWrapperError, Fields, model_obj=Example(), model='blah')
+            FieldWrapperModelError, Fields, model_obj=Example(), model='blah')
 
     def test_fields(self):
-        self.assertTrue(
-            Fields(model_obj=Example(),
-                   model=Example._meta.label_lower))
         self.assertTrue(
             Fields(model_obj=Example(), model=Example))
 
