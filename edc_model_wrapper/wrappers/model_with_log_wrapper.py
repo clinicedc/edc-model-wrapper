@@ -4,6 +4,8 @@ from edc_base.utils import get_utcnow
 from ..utils import model_name_as_attr
 from .model_relation import ModelRelation
 from .model_wrapper import ModelWrapper, ModelWrapperError
+from django.db.models.constants import LOOKUP_SEP
+from pprint import pprint
 
 
 class ModelWithLogWrapperError(Exception):
@@ -12,11 +14,18 @@ class ModelWithLogWrapperError(Exception):
 
 class LogModelRelation(ModelRelation):
 
-    def __init__(self, model_obj=None, log_entry_ordering='-report_datetime', **kwargs):
+    LOOKUP_SEP = LOOKUP_SEP
+
+    def __init__(self, model_obj=None, log_entry_ordering='-report_datetime', parent_lookup=None, **kwargs):
+        if parent_lookup:
+            model_name = (parent_lookup, model_obj._meta.object_name.lower())
+        else:
+            model_name = model_obj._meta.object_name.lower()
         schema = [
-            model_obj._meta.object_name.lower(),
+            model_name,
             f'{model_obj._meta.object_name.lower()}_log',
             f'{model_obj._meta.object_name.lower()}_log_entry']
+        pprint(schema)
         super().__init__(model_obj=model_obj, schema=schema,
                          log_entry_ordering=log_entry_ordering)
 
@@ -44,11 +53,12 @@ class ModelWithLogWrapper:
     log_model_attr_prefix = None
     log_model_app_label = None  # if different from parent
 
-    def __init__(self, model_obj=None, next_url_name=None, report_datetime=None, **kwargs):
+    def __init__(self, model_obj=None, next_url_name=None, report_datetime=None, lookup=None, **kwargs):
         self.object = model_obj
         self.object_model = model_obj.__class__
 
-        relation = self.model_relation_cls(model_obj=model_obj, **kwargs)
+        relation = self.model_relation_cls(
+            model_obj=model_obj, lookup=lookup, **kwargs)
 
         self.log_model = relation.log_model
         self.log = self.log_model_wrapper_cls(

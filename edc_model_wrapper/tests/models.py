@@ -1,4 +1,3 @@
-from edc_base.model_mixins.url_mixin import UrlMixin
 __all__ = ['Example', 'ParentExample', 'ExampleLog', 'ExampleLogEntry']
 
 import uuid
@@ -9,6 +8,21 @@ from edc_base.utils import get_utcnow
 
 
 class Example(BaseUuidModel):
+
+    example_identifier = models.CharField(
+        max_length=10, unique=True)
+
+    f1 = models.CharField(max_length=10)
+
+    f2 = models.CharField(max_length=10, null=True)
+
+    f3 = models.CharField(max_length=10, default=uuid.uuid4())
+
+    report_datetime = models.DateTimeField(
+        default=get_utcnow)
+
+
+class UnrelatedExample(BaseUuidModel):
 
     example_identifier = models.CharField(
         max_length=10, unique=True)

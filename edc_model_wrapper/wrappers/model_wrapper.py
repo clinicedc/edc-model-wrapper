@@ -45,12 +45,13 @@ class ModelWrapper:
 
     fields_cls = Fields
     keywords_cls = Keywords
-    url_namespace = None
     next_url_parser_cls = NextUrlParser
+
+    model = None  # class or label_lower
+    url_namespace = None
     next_url_name = None
     next_url_attrs = []
     querystring_attrs = []
-    model = None  # class or label_lower
 
     def __init__(self, model_obj=None, model=None, next_url_name=None,
                  next_url_attrs=None, querystring_attrs=None,

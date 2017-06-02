@@ -4,7 +4,8 @@ from django.test import TestCase, tag
 from edc_base.utils import get_utcnow
 
 from ..wrappers import ModelWrapper, ModelWithLogWrapper
-from .models import Example, ParentExample, ExampleLog, ExampleLogEntry
+from .models import Example, ExampleLog, ExampleLogEntry
+from edc_model_wrapper.tests.models import UnrelatedExample
 
 
 class ExampleModelWrapper(ModelWrapper):
@@ -154,6 +155,15 @@ class TestModelWithLogWrapper(TestCase):
 
 
 class TestModelWithLogWrapperUrls(TestCase):
+
+    @tag('5')
+    def test_wrapper_log(self):
+        example = Example.objects.create()
+        uexample = UnrelatedExample.objects.create()
+        log = ExampleLog.objects.create(example=example)
+        wrapper = ModelWithLogWrapper(
+            model_obj=uexample, next_url_name='listboard', lookup='example')
+        self.assertEqual(wrapper.log.object.unexample, log.example)
 
     @tag('2')
     def test_wrapper_urls(self):
