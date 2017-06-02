@@ -9,6 +9,10 @@ class ModelWrapperError(Exception):
     pass
 
 
+class ModelWrapperModelError(Exception):
+    pass
+
+
 class ModelWrapperObjectAlreadyWrapped(Exception):
     pass
 
@@ -59,6 +63,12 @@ class ModelWrapper:
 
         self.object = model_obj
         self.model = model or self.model
+        try:
+            self.model = django_apps.get_model(*self.model.split('.'))
+        except AttributeError:
+            pass
+        except ValueError as e:
+            raise ModelWrapperModelError(f'{e}. Got model={model}.')
         self.fields = self.fields_cls(
             model_obj=self.object, model=self.model, **kwargs).fields
 

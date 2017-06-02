@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.test import TestCase, tag
 
 from ..wrappers import Fields, FieldWrapperError
-from ..wrappers import ModelWrapper, ModelWrapperObjectAlreadyWrapped
+from ..wrappers import ModelWrapper, ModelWrapperObjectAlreadyWrapped, ModelWrapperModelError
 from .models import Example, ParentExample
 
 
@@ -40,7 +40,6 @@ class TestFields(TestCase):
 @tag('model_wrapper')
 class TestModelWrapper(TestCase):
 
-    @tag('1')
     def test_model_wrapper(self):
         """Asserts can construct.
         """
@@ -80,8 +79,24 @@ class TestModelWrapper(TestCase):
                      model='edc_model_wrapper.example',
                      next_url_name='thenexturl')
         self.assertRaises(
-            FieldWrapperError,
+            ModelWrapperModelError,
             ModelWrapper, model_obj=Example(), model='blah', next_url_name='thenexturl')
+
+    def test_model_wrapper_model_is_class1(self):
+        """Asserts model returns as a class if passed label_lower.
+        """
+        wrapper = ModelWrapper(model_obj=Example(),
+                               model='edc_model_wrapper.example',
+                               next_url_name='thenexturl')
+        self.assertEqual(wrapper.model, Example)
+
+    def test_model_wrapper_model_is_class2(self):
+        """Asserts model returns as a class if passed class.
+        """
+        wrapper = ModelWrapper(model_obj=Example(),
+                               model=Example,
+                               next_url_name='thenexturl')
+        self.assertEqual(wrapper.model, Example)
 
 
 class TestExampleWrappers(TestCase):

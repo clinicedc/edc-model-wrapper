@@ -172,7 +172,7 @@ class TestModelWithLogWrapperUrls(TestCase):
         wrapper = ModelWithLogWrapper(
             model_obj=example, next_url_name='listboard')
         self.assertIn(
-            'example_log={}'.format(example_log.id),
+            f'example_log={example_log.id}',
             wrapper.log_entry.next_url)
         self.assertIn(
             'listboard_url',
