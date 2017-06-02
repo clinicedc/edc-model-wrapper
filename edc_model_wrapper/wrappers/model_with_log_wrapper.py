@@ -1,11 +1,7 @@
-
-from edc_base.utils import get_utcnow
-
-from ..utils import model_name_as_attr
-from .model_relation import ModelRelation
-from .model_wrapper import ModelWrapper, ModelWrapperError
 from django.db.models.constants import LOOKUP_SEP
-from pprint import pprint
+
+from .model_relation import ModelRelation
+from .model_wrapper import ModelWrapper
 
 
 class ModelWithLogWrapperError(Exception):
@@ -25,7 +21,6 @@ class LogModelRelation(ModelRelation):
             model_name,
             f'{model_obj._meta.object_name.lower()}_log',
             f'{model_obj._meta.object_name.lower()}_log_entry']
-        pprint(schema)
         super().__init__(model_obj=model_obj, schema=schema,
                          log_entry_ordering=log_entry_ordering)
 
