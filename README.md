@@ -29,7 +29,12 @@ Get the admin url
 
     >>> wrapper.admin_url_name
     '/admin/edc_model_wrapper/example/add/'
-    
+
+Model is a class regardless of how it was declared:
+
+    >>> assert wrapper.model == Example
+    True
+
 
 All field attrs are converted to string and added to the wrapper, except foreignkeys:
 
@@ -61,7 +66,21 @@ The original object is accessible, if needed:
     datetime.datetime(2017, 6, 1, 15, 4, 55, 594512)
         
  
+## Options
 
+Declare with a model class instead of label_lower:
 
+    from edc_model_wrapper.models import Example
     
+    class ExampleModelWrapper(ModelWrapper):
+        model = Example
+        url_namespace = 'edc-model-wrapper'
+        next_url_name = 'listboard_url'
+        next_url_attrs = ['f1']
+        querystring_attrs = ['f2', 'f3']
+
+
+## Log Entry Models
+
+
     
