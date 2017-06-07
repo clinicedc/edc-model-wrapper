@@ -1,13 +1,24 @@
 from django.contrib import admin
+from django.core.exceptions import ObjectDoesNotExist
 from django.test import TestCase, tag
 
 from ..wrappers import Fields, FieldWrapperError, FieldWrapperModelError
 from ..wrappers import ModelWrapper, ModelWrapperObjectAlreadyWrapped, ModelWrapperModelError
-from .models import Example, ParentExample
+from .models import Example, ParentExample, Appointment, SubjectVisit
 
 
 @admin.register(Example)
 class ExampleAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(Appointment)
+class AppointmentAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(SubjectVisit)
+class SubjectVisitAdmin(admin.ModelAdmin):
     pass
 
 
@@ -26,12 +37,12 @@ class TestFields(TestCase):
         self.assertTrue(
             Fields(model_obj=Example(), model=Example))
 
-    def test_fields_skips_fk(self):
+    def test_fields_skips_example(self):
         class Wrapper:
             pass
         wrapper = Wrapper()
         fields = Fields(model_obj=ParentExample(), model=ParentExample)
-        self.assertNotIn('fk', dict(fields.fields(wrapper)))
+        self.assertNotIn('example', dict(fields.fields(wrapper)))
 
 
 @tag('model_wrapper')
@@ -132,3 +143,133 @@ class TestExampleWrappers(TestCase):
         wrapper = self.wrapper_cls(model_obj=model_obj)
         self.assertEqual(
             wrapper.admin_url_name, 'edc-model-wrapper:admin:edc_model_wrapper_example_change')
+
+
+@tag('1')
+class TestExampleWrappers2(TestCase):
+    """A group of tests that show a common scenario of 
+    Appointment and SubjectVisit.
+    """
+
+    def setUp(self):
+
+        class SubjectVisitModelWrapper1(ModelWrapper):
+            model = 'edc_model_wrapper.subjectvisit'
+            url_namespace = 'edc-model-wrapper'
+            next_url_name = 'listboard_url'
+            next_url_attrs = ['v1']
+            # querystring_attrs = ['f2', 'f3']
+
+        class SubjectVisitModelWrapper2(ModelWrapper):
+            model = 'edc_model_wrapper.subjectvisit'
+            url_namespace = 'edc-model-wrapper'
+            next_url_name = 'listboard_url'
+            next_url_attrs = ['v1', 'appointment']
+            # querystring_attrs = ['f2', 'f3']
+
+            @property
+            def appointment(self):
+                return self.object.appointment.id
+
+        class AppointmentModelWrapper1(ModelWrapper):
+            model = 'edc_model_wrapper.appointment'
+            url_namespace = 'edc-model-wrapper'
+            next_url_name = 'listboard_url'
+            next_url_attrs = ['a1']
+            # querystring_attrs = ['f2', 'f3']
+
+            @property
+            def visit(self):
+                try:
+                    model_obj = self.object.subjectvisit
+                except ObjectDoesNotExist:
+                    model_obj = SubjectVisit(
+                        appointment=Appointment(a1=1), v1=1)
+                return SubjectVisitModelWrapper1(model_obj=model_obj)
+
+        class AppointmentModelWrapper2(ModelWrapper):
+            model = 'edc_model_wrapper.appointment'
+            url_namespace = 'edc-model-wrapper'
+            next_url_name = 'listboard_url'
+            next_url_attrs = ['a1']
+            # querystring_attrs = ['f2', 'f3']
+
+            @property
+            def visit(self):
+                try:
+                    model_obj = self.object.subjectvisit
+                except ObjectDoesNotExist:
+                    model_obj = SubjectVisit(
+                        appointment=Appointment(a1=1), v1=1)
+                return SubjectVisitModelWrapper2(model_obj=model_obj)
+
+        self.appointment_model_wrapper1_cls = AppointmentModelWrapper1
+        self.appointment_model_wrapper2_cls = AppointmentModelWrapper2
+        self.subject_visit_model_wrapper1_cls = SubjectVisitModelWrapper1
+        self.subject_visit_model_wrapper2_cls = SubjectVisitModelWrapper2
+
+    def test_wrapper(self):
+
+        model_obj = Appointment.objects.create()
+        self.appointment_model_wrapper1_cls(model_obj=model_obj)
+
+    def test_wrapper_visit(self):
+        model_obj = Appointment.objects.create()
+        wrapper = self.appointment_model_wrapper1_cls(model_obj=model_obj)
+        self.assertIsNotNone(wrapper.visit)
+
+    def test_wrapper_appointment_href(self):
+        model_obj = Appointment.objects.create(a1=1)
+        wrapper = self.appointment_model_wrapper1_cls(model_obj=model_obj)
+        self.assertIn(
+            'next=edc-model-wrapper:listboard_url,a1&a1=1', wrapper.href)
+
+    def test_wrapper_visit_href(self):
+        model_obj = Appointment.objects.create(a1=1)
+        wrapper = self.appointment_model_wrapper1_cls(model_obj=model_obj)
+        self.assertIn(
+            'next=edc-model-wrapper:listboard_url,v1&v1=1', wrapper.visit.href)
+
+    def test_wrapper_visit_href_persisted(self):
+        model_obj = Appointment.objects.create(a1=1)
+        SubjectVisit.objects.create(appointment=model_obj, v1=2)
+        wrapper = self.appointment_model_wrapper1_cls(model_obj=model_obj)
+        self.assertIn(
+            'next=edc-model-wrapper:listboard_url,v1&v1=2', wrapper.visit.href)
+
+    def test_wrapper_visit_appointment_raises(self):
+        model_obj = Appointment.objects.create(a1=1)
+        SubjectVisit.objects.create(appointment=model_obj, v1=2)
+        wrapper = self.appointment_model_wrapper1_cls(model_obj=model_obj)
+        try:
+            wrapper.visit.appointment
+        except AttributeError:
+            pass
+        else:
+            self.fail('AttributeError unexpectedly not raised')
+
+    def test_wrapper_visit_appointment_from_object(self):
+        model_obj = Appointment.objects.create(a1=1)
+        SubjectVisit.objects.create(appointment=model_obj, v1=2)
+        wrapper = self.appointment_model_wrapper1_cls(model_obj=model_obj)
+        try:
+            wrapper.visit.object.appointment
+        except AttributeError:
+            self.fail('AttributeError unexpectedly raised')
+
+    def test_wrapper_visit_appointment_raises1(self):
+        model_obj = Appointment.objects.create(a1=1)
+        SubjectVisit.objects.create(appointment=model_obj, v1=2)
+        wrapper = self.appointment_model_wrapper2_cls(model_obj=model_obj)
+        try:
+            wrapper.visit.appointment
+        except AttributeError:
+            self.fail('AttributeError unexpectedly raised')
+
+    def test_wrapper_visit_href_with_appointment(self):
+        model_obj = Appointment.objects.create(a1=1)
+        SubjectVisit.objects.create(appointment=model_obj, v1=2)
+        wrapper = self.appointment_model_wrapper2_cls(model_obj=model_obj)
+        self.assertIn(
+            f'next=edc-model-wrapper:listboard_url,v1,appointment&v1=2&appointment={model_obj.pk}',
+            wrapper.visit.href)

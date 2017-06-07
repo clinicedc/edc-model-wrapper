@@ -12,7 +12,6 @@ class TestModelRealtions(TestCase):
         self.example_log_entry = ExampleLogEntry.objects.create(
             example_log=self.example_log)
 
-    @tag('1')
     def test_model_relations_by_schema(self):
         model_relations = ModelRelation(
             model_obj=self.example,
@@ -20,7 +19,6 @@ class TestModelRealtions(TestCase):
         self.assertEqual(model_relations.log_model, ExampleLog)
         self.assertEqual(model_relations.log_entry_model, ExampleLogEntry)
 
-    @tag('1')
     def test_model_relations_by_schema2(self):
         model_relations = ModelRelation(
             model_obj=self.example,
@@ -28,7 +26,6 @@ class TestModelRealtions(TestCase):
         self.assertIsInstance(model_relations.log, ExampleLog)
         self.assertIsInstance(model_relations.log_entry, ExampleLogEntry)
 
-    @tag('1')
     def test_model_relations_by_schema3(self):
         model_relations = ModelRelation(
             model_obj=self.example,

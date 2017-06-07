@@ -53,14 +53,12 @@ class ParentExampleModelWithLogWrapper(ModelWithLogWrapper):
 
 class TestModelWithLogWrapper(TestCase):
 
-    @tag('1')
     def test_wrapper_object(self):
         example = Example.objects.create()
         wrapper = ModelWithLogWrapper(
             model_obj=example, next_url_name='listboard')
         self.assertEqual(wrapper.object, example)
 
-    @tag('1')
     def test_wrapper_log(self):
         example = Example.objects.create()
         log = ExampleLog.objects.create(example=example)
@@ -68,7 +66,6 @@ class TestModelWithLogWrapper(TestCase):
             model_obj=example, next_url_name='listboard')
         self.assertEqual(wrapper.log.object.example, log.example)
 
-    @tag('1')
     def test_wrapper_log_entry(self):
         example = Example.objects.create()
         log = ExampleLog.objects.create(example=example)
@@ -79,7 +76,6 @@ class TestModelWithLogWrapper(TestCase):
             wrapper.log_entry.object.example_log,
             log_entry.example_log)
 
-    @tag('1')
     def test_wrapper_fills_log_entry(self):
         """Asserts adds a non-persisted instance of log entry
         if a persisted one does not exist.
@@ -93,7 +89,6 @@ class TestModelWithLogWrapper(TestCase):
             example_log,
             wrapper.log_entry.object.example_log)
 
-    @tag('1')
     def test_wrapper_fills_log(self):
         """Asserts adds a non-persisted instance of log
         if a persisted one does not exist.
@@ -104,7 +99,6 @@ class TestModelWithLogWrapper(TestCase):
         self.assertIsNone(wrapper.log.object.id)
         self.assertEqual(example, wrapper.log.object.example)
 
-    @tag('1')
     def test_wrapper_fills_log_and_logentry(self):
         """Asserts adds a non-persisted instance of log and log entry
         if a persisted ones do not exist.
@@ -115,7 +109,6 @@ class TestModelWithLogWrapper(TestCase):
         self.assertIsNone(wrapper.log.object.id)
         self.assertIsNone(wrapper.log_entry.object.id)
 
-    @tag('1')
     def test_wrapper_no_entries(self):
         example = Example.objects.create()
         ExampleLog.objects.create(example=example)
@@ -123,7 +116,6 @@ class TestModelWithLogWrapper(TestCase):
             model_obj=example, next_url_name='listboard')
         self.assertEqual(wrapper.log_entries, [])
 
-    @tag('1')
     def test_wrapper_multpile_log_entries(self):
         example = Example.objects.create()
         example_log = ExampleLog.objects.create(example=example)
@@ -134,7 +126,6 @@ class TestModelWithLogWrapper(TestCase):
             model_obj=example, next_url_name='listboard')
         self.assertEqual(len(wrapper.log_entries), 3)
 
-    @tag('1')
     def test_wrapper_picks_first_log_entry(self):
         example = Example.objects.create()
         example_log = ExampleLog.objects.create(example=example)

@@ -45,7 +45,7 @@ class ParentExample(BaseUuidModel):
 
     f3 = models.CharField(max_length=10, default=uuid.uuid4())
 
-    fk = models.ForeignKey(Example)
+    example = models.ForeignKey(Example)
 
     report_datetime = models.DateTimeField(
         default=get_utcnow)
@@ -67,3 +67,19 @@ class ExampleLogEntry(BaseUuidModel):
 
     report_datetime = models.DateTimeField(
         default=get_utcnow)
+
+
+class Appointment(BaseUuidModel):
+
+    report_datetime = models.DateTimeField(default=get_utcnow)
+
+    a1 = models.CharField(max_length=10)
+
+
+class SubjectVisit(BaseUuidModel):
+
+    report_datetime = models.DateTimeField(default=get_utcnow)
+
+    v1 = models.CharField(max_length=10)
+
+    appointment = models.OneToOneField(Appointment)
