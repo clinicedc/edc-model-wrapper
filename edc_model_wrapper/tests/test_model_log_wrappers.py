@@ -157,7 +157,7 @@ class TestModelWithLogWrapper(TestCase):
 class TestModelWithLogWrapperUrls(TestCase):
 
     @tag('5')
-    def test_wrapper_log(self):
+    def test_unrelated_wrapper_log(self):
         example = Example.objects.create()
         uexample = UnrelatedExample.objects.create()
         log = ExampleLog.objects.create(example=example)

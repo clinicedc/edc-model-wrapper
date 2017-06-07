@@ -89,11 +89,11 @@ class ModelWrapper:
             raise ModelWrapperObjectAlreadyWrapped(
                 f'Model is already wrapped. Got {self.object}')
         # ??
-        for key, value in self.__dict__.items():
-            if hasattr(value, 'wrapped'):
-                raise ModelWrapperInvalidProperty(
-                    'Invalid property. Property may not return a wrapped object. '
-                    f'Got {key}, {value}')
+#         for key, value in self.__dict__.items():
+#             if hasattr(value, 'wrapped'):
+#                 raise ModelWrapperInvalidProperty(
+#                     'Invalid property. Property may not return a wrapped object. '
+#                     f'Got {key}, {value}')
 
         # wrap me with kwargs
         for attr, value in kwargs.items():
