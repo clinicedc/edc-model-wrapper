@@ -16,7 +16,7 @@ class ModelWithLogWrapper:
         class is instantiated with.
     """
 
-    # model_wrapper_cls = ModelWrapper
+    model_wrapper_cls = ModelWrapper
     log_model_wrapper_cls = ModelWrapper
     log_entry_model_wrapper_cls = ModelWrapper
     model_relation_cls = LogModelRelation
@@ -33,6 +33,12 @@ class ModelWithLogWrapper:
                  ordering=None, **kwargs):
         self.object = model_obj
         self.object_model = model_obj.__class__
+        self.wrapped_object = self.model_wrapper_cls(
+            model_obj=self.object,
+            model=self.object_model,
+            next_url_name=next_url_name or self.next_url_name,
+            **kwargs)
+
         if related_lookup:
             self.related_lookup = related_lookup
 

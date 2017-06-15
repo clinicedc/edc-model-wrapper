@@ -50,6 +50,12 @@ class TestModelWithLogWrapper(TestCase):
             model_obj=example, next_url_name='listboard')
         self.assertEqual(wrapper.object, example)
 
+    def test_wrapper_wrapped_object(self):
+        example = Example.objects.create()
+        wrapper = ModelWithLogWrapper(
+            model_obj=example, next_url_name='listboard')
+        self.assertEqual(wrapper.wrapped_object.object, example)
+
     def test_wrapper_repr(self):
         example = Example.objects.create()
         wrapper = ModelWithLogWrapper(
