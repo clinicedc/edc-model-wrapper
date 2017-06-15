@@ -53,7 +53,7 @@ class NextUrlParser:
             keywords = self.keywords_cls(
                 objects=objects, attrs=self.url_args, include_attrs=self.url_args, **url_kwargs)
             querystring = parse.urlencode(keywords, encoding='utf-8')
-            return f'next={url_namespace}{self.url_name}{next_args}&{querystring}'
+            return f'{url_namespace}{self.url_name}{next_args}&{querystring}'
         return ''
 
 #     def reverse(self):

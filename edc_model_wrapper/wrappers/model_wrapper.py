@@ -118,7 +118,7 @@ class ModelWrapper:
 
     @property
     def href(self):
-        return f'{self.get_absolute_url()}?{self.next_url}&{self.querystring}'
+        return f'{self.get_absolute_url()}?next={self.next_url}&{self.querystring}'
 
     def _get_model_cls_or_raise(self, model_obj, model=None):
         """Returns the given model, as a class, or raises an exception.

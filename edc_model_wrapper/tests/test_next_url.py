@@ -12,7 +12,7 @@ class TestNextUrlParser(TestCase):
         obj2 = DummyObj(c=1, d=2)
         parser = NextUrlParser(url_name='example', url_args=['a', 'b'])
         self.assertEqual(parser.querystring(
-            objects=[obj2, obj1]), 'next=example,a,b&a=1&b=2')
+            objects=[obj2, obj1]), 'example,a,b&a=1&b=2')
 
     def test_url_parser_no_name_raises(self):
         self.assertRaises(NextUrlError, NextUrlParser)
