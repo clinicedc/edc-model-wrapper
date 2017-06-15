@@ -1,7 +1,5 @@
 # edc-model-wrapper
-[![Build Status](https://travis-ci.org/botswana-harvard/edc-model-wrapper.svg?branch=master)](https://travis-ci.org/botswana-harvard/edc-model-wrapper)
-
-[![Coverage Status](https://coveralls.io/repos/github/botswana-harvard/edc-model-wrapper/badge.svg?branch=develop)](https://coveralls.io/github/botswana-harvard/edc-model-wrapper?branch=develop)
+[![Build Status](https://travis-ci.org/botswana-harvard/edc-model-wrapper.svg?branch=master)](https://travis-ci.org/botswana-harvard/edc-model-wrapper) [![Coverage Status](https://coveralls.io/repos/github/botswana-harvard/edc-model-wrapper/badge.svg?branch=develop)](https://coveralls.io/github/botswana-harvard/edc-model-wrapper?branch=develop)
 
 Wrap a model instance with a custom wrapper to add methods needed for Dabsboards and Listboards.
 
