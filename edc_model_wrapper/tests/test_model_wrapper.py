@@ -175,6 +175,21 @@ class TestExampleWrappers(TestCase):
         self.assertEqual(
             wrapper.admin_url_name, 'edc-model-wrapper:admin:edc_model_wrapper_example_change')
 
+    def test_model_wrapper_fields(self):
+        model_obj = Example(f1=1, f2=2, f3=3)
+        model_obj.save()
+        wrapper = self.wrapper_cls(model_obj=model_obj)
+        self.assertIsNotNone(wrapper.f1)
+        self.assertIsNotNone(wrapper.f2)
+        self.assertIsNotNone(wrapper.f3)
+        self.assertIsNotNone(wrapper.revision)
+        self.assertIsNotNone(wrapper.hostname_created)
+        self.assertIsNotNone(wrapper.hostname_modified)
+        self.assertIsNotNone(wrapper.user_created)
+        self.assertIsNotNone(wrapper.user_modified)
+        self.assertIsNotNone(wrapper.created)
+        self.assertIsNotNone(wrapper.modified)
+
 
 class TestExampleWrappers2(TestCase):
     """A group of tests that show a common scenario of

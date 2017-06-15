@@ -50,11 +50,22 @@ class TestModelWithLogWrapper(TestCase):
             model_obj=example, next_url_name='listboard')
         self.assertEqual(wrapper.object, example)
 
-    def test_wrapper_wrapped_object(self):
+    def testwrapper_fields(self):
         example = Example.objects.create()
         wrapper = ModelWithLogWrapper(
             model_obj=example, next_url_name='listboard')
-        self.assertEqual(wrapper.wrapped_object.object, example)
+        self.assertIsNotNone(wrapper.f1)
+        self.assertIsNotNone(wrapper.f2)
+        self.assertIsNotNone(wrapper.f3)
+        self.assertIsNotNone(wrapper.revision)
+        self.assertIsNotNone(wrapper.hostname_created)
+        self.assertIsNotNone(wrapper.hostname_modified)
+        self.assertIsNotNone(wrapper.user_created)
+        self.assertIsNotNone(wrapper.user_modified)
+        self.assertIsNotNone(wrapper.created)
+        self.assertIsNotNone(wrapper.modified)
+        self.assertTrue(bool(wrapper))
+        self.assertTrue(wrapper.object.wrapped)
 
     def test_wrapper_repr(self):
         example = Example.objects.create()

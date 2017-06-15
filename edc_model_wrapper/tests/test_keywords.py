@@ -4,6 +4,7 @@ from django.test import TestCase, tag
 from urllib import parse
 
 from ..parsers import Keywords
+from .models import ParentExample, Example, SuperParentExample
 
 
 class DummyObj:
@@ -54,3 +55,17 @@ class TestKeywords(TestCase):
             a=100)
         self.assertEqual(
             parse.urlencode(keywords, encoding='utf-8'), f'a=100&b=&id={pk}')
+
+    def test_url_parser_model(self):
+        example = Example.objects.create()
+        obj = ParentExample.objects.create(example=example)
+        keywords = Keywords(objects=[obj], attrs=['example'])
+        self.assertEqual(
+            parse.urlencode(keywords, encoding='utf-8'), f'example={str(example.pk)}')
+
+    def test_url_parser_model2(self):
+        parent_example = ParentExample.objects.create()
+        obj = SuperParentExample.objects.create(parent_example=parent_example)
+        keywords = Keywords(objects=[obj], attrs=['parent_example'])
+        self.assertEqual(
+            parse.urlencode(keywords, encoding='utf-8'), f'parent_example={str(parent_example.pk)}')
