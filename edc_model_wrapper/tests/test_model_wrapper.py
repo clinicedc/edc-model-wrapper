@@ -2,9 +2,9 @@ from django.contrib import admin
 from django.core.exceptions import ObjectDoesNotExist
 from django.test import TestCase, tag
 
-from ..wrappers import Fields, FieldWrapperError, FieldWrapperModelError
 from ..wrappers import ModelWrapper, ModelWrapperObjectAlreadyWrapped, ModelWrapperModelError
-from .models import Example, ParentExample, Appointment, SubjectVisit
+from .models import Example, Appointment, SubjectVisit
+from edc_model_wrapper.tests.models import ParentExample
 
 
 @admin.register(Example)
@@ -22,29 +22,6 @@ class SubjectVisitAdmin(admin.ModelAdmin):
     pass
 
 
-@tag('fields')
-class TestFields(TestCase):
-
-    def test_fields_only_except_model(self):
-        self.assertRaises(
-            FieldWrapperError, Fields, model_obj=1, model=Example)
-
-    def test_fields_only_except_models_with_name(self):
-        self.assertRaises(
-            FieldWrapperModelError, Fields, model_obj=Example(), model='blah')
-
-    def test_fields(self):
-        self.assertTrue(
-            Fields(model_obj=Example(), model=Example))
-
-    def test_fields_skips_example(self):
-        class Wrapper:
-            pass
-        wrapper = Wrapper()
-        fields = Fields(model_obj=ParentExample(), model=ParentExample)
-        self.assertNotIn('example', dict(fields.fields(wrapper)))
-
-
 @tag('model_wrapper')
 class TestModelWrapper(TestCase):
 
@@ -56,16 +33,70 @@ class TestModelWrapper(TestCase):
             model_obj=obj, model=Example,
             next_url_name='thenexturl')
 
+    def test_model_wrapper_assumes_model_cls(self):
+        """Asserts can construct.
+        """
+        obj = Example()
+        wrapper = ModelWrapper(
+            model_obj=obj, next_url_name='thenexturl')
+        self.assertEqual(wrapper.model, Example)
+
+    def test_model_wrapper_raises_on_wrong_model_cls(self):
+        """Asserts can construct.
+        """
+        obj = Example()
+        self.assertRaises(
+            ModelWrapperModelError,
+            ModelWrapper,
+            model_obj=obj, model=ParentExample, next_url_name='thenexturl')
+
+    def test_model_wrapper_adds_kwargs_to_self(self):
+        obj = Example()
+        wrapper = ModelWrapper(
+            model_obj=obj, next_url_name='thenexturl', erik='silly')
+        self.assertEqual(wrapper.erik, 'silly')
+
     def test_model_wrapper_bool(self):
-        """Asserts obj can be truth tested.
+        """Asserts wrapper can be truth tested.
 
         If model is not persisted is False.
         """
         obj = Example()
-        ModelWrapper(
+        wrapper = ModelWrapper(
             model_obj=obj, model=Example,
             next_url_name='thenexturl')
-        self.assertFalse(obj is True)
+        self.assertIsNone(wrapper.object.id)
+        self.assertFalse(bool(wrapper))
+
+    def test_model_wrapper_bool2(self):
+        """Asserts wrapper can be truth tested.
+
+        If model is persisted is True.
+        """
+        obj = Example.objects.create()
+        wrapper = ModelWrapper(
+            model_obj=obj, model=Example,
+            next_url_name='thenexturl')
+        self.assertTrue(bool(wrapper))
+
+    def test_model_wrapper_meta(self):
+        """Asserts wrapper maintains _meta.
+        """
+        obj = Example.objects.create()
+        wrapper = ModelWrapper(
+            model_obj=obj, model=Example,
+            next_url_name='thenexturl')
+        self.assertEqual(wrapper._meta.label_lower,
+                         'edc_model_wrapper.example')
+
+    def test_model_wrapper_repr(self):
+        """Asserts wrapper maintains _meta.
+        """
+        obj = Example.objects.create()
+        wrapper = ModelWrapper(
+            model_obj=obj, model=Example,
+            next_url_name='thenexturl')
+        self.assertTrue(repr(wrapper))
 
     def test_model_wrapper_wraps_once(self):
         """Asserts a wrapped model instance cannot be wrapped.
@@ -145,9 +176,8 @@ class TestExampleWrappers(TestCase):
             wrapper.admin_url_name, 'edc-model-wrapper:admin:edc_model_wrapper_example_change')
 
 
-@tag('1')
 class TestExampleWrappers2(TestCase):
-    """A group of tests that show a common scenario of 
+    """A group of tests that show a common scenario of
     Appointment and SubjectVisit.
     """
 
@@ -196,11 +226,7 @@ class TestExampleWrappers2(TestCase):
 
             @property
             def visit(self):
-                try:
-                    model_obj = self.object.subjectvisit
-                except ObjectDoesNotExist:
-                    model_obj = SubjectVisit(
-                        appointment=Appointment(a1=1), v1=1)
+                model_obj = self.object.subjectvisit
                 return SubjectVisitModelWrapper2(model_obj=model_obj)
 
         self.appointment_model_wrapper1_cls = AppointmentModelWrapper1

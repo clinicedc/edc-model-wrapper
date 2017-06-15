@@ -1,28 +1,9 @@
-from django.db.models.constants import LOOKUP_SEP
-
-from .model_relation import ModelRelation
+from .model_relation import LogModelRelation
 from .model_wrapper import ModelWrapper
 
 
 class ModelWithLogWrapperError(Exception):
     pass
-
-
-class LogModelRelation(ModelRelation):
-
-    LOOKUP_SEP = LOOKUP_SEP
-
-    def __init__(self, model_obj=None, log_entry_ordering='-report_datetime', parent_lookup=None, **kwargs):
-        if parent_lookup:
-            model_name = (parent_lookup, model_obj._meta.object_name.lower())
-        else:
-            model_name = model_obj._meta.object_name.lower()
-        schema = [
-            model_name,
-            f'{model_obj._meta.object_name.lower()}_log',
-            f'{model_obj._meta.object_name.lower()}_log_entry']
-        super().__init__(model_obj=model_obj, schema=schema,
-                         log_entry_ordering=log_entry_ordering)
 
 
 class ModelWithLogWrapper:
@@ -35,7 +16,7 @@ class ModelWithLogWrapper:
         class is instantiated with.
     """
 
-    model_wrapper_cls = ModelWrapper
+    # model_wrapper_cls = ModelWrapper
     log_model_wrapper_cls = ModelWrapper
     log_entry_model_wrapper_cls = ModelWrapper
     model_relation_cls = LogModelRelation
@@ -44,35 +25,47 @@ class ModelWithLogWrapper:
     # for example, model = HouseholdStructure but parent to HouseholdLog
     #   is Household, not HousholdStructure.
     # Note: parent and model must be related
-    parent_lookup = None
+    related_lookup = None
     log_model_attr_prefix = None
     log_model_app_label = None  # if different from parent
 
-    def __init__(self, model_obj=None, next_url_name=None, report_datetime=None, lookup=None, **kwargs):
+    def __init__(self, model_obj=None, next_url_name=None, related_lookup=None,
+                 ordering=None, **kwargs):
         self.object = model_obj
         self.object_model = model_obj.__class__
+        if related_lookup:
+            self.related_lookup = related_lookup
 
+        # determine relation to log and to log_entry
         relation = self.model_relation_cls(
-            model_obj=model_obj, lookup=lookup, **kwargs)
+            model_obj=model_obj,
+            related_lookup=self.related_lookup,
+            ordering=ordering)
 
+        # set log relation
         self.log_model = relation.log_model
         self.log = self.log_model_wrapper_cls(
             model_obj=relation.log,
             model=self.log_model,
-            next_url_name=next_url_name, **kwargs)
+            next_url_name=next_url_name or self.next_url_name,
+            **kwargs)
 
+        # set log_entry relation
         self.log_entry_model = relation.log_entry_model
         self.log_entry = self.log_entry_model_wrapper_cls(
             model_obj=relation.log_entry,
             model=self.log_entry_model,
-            next_url_name=next_url_name, **kwargs)
+            next_url_name=next_url_name or self.next_url_name,
+            **kwargs)
 
+        # log entries as a queryset
         self.log_entries = []
         for log_entry in relation.log_entries:
             wrapped = self.log_entry_model_wrapper_cls(
                 model_obj=log_entry,
                 model=self.log_entry_model,
-                next_url_name=next_url_name, **kwargs)
+                next_url_name=next_url_name or self.next_url_name,
+                **kwargs)
             self.log_entries.append(wrapped)
 
         self.log_model_names = relation.model_names
@@ -80,18 +73,3 @@ class ModelWithLogWrapper:
     def __repr__(self):
         return (f'{self.__class__.__name__}(<{self.object.__class__.__name__}: '
                 f'{self.object} id={self.object.id}>)')
-
-    @property
-    def parent(self):
-        """Returns a wrapped original_object or parent model.
-
-        parent_lookup follows Django style lookup"""
-        if not self._parent:
-            if self.parent_lookup:
-                for attrname in self.parent_lookup.split('__'):
-                    parent = getattr(self._original_object, attrname)
-                self._parent = parent
-            else:
-                self._parent = self._original_object  # e.g. Plot
-            self._parent = self.model_wrapper_class(self._parent)
-        return self._parent

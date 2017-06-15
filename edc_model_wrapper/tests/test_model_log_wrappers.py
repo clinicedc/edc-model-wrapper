@@ -4,8 +4,7 @@ from django.test import TestCase, tag
 from edc_base.utils import get_utcnow
 
 from ..wrappers import ModelWrapper, ModelWithLogWrapper
-from .models import Example, ExampleLog, ExampleLogEntry
-from edc_model_wrapper.tests.models import UnrelatedExample
+from .models import Example, ExampleLog, ExampleLogEntry, ParentExample
 
 
 class ExampleModelWrapper(ModelWrapper):
@@ -33,14 +32,6 @@ class ExampleLogEntryModelWrapper(ModelWrapper):
     url_attrs = ['example_identifier', 'example_log']
     url_namespace = 'edc-model-wrapper'
 
-    @property
-    def example_identifier(self):
-        return self._original_object.example_log.example.example_identifier
-
-    @property
-    def survey(self):
-        return 'survey_one'
-
 
 class ParentExampleModelWithLogWrapper(ModelWithLogWrapper):
 
@@ -48,7 +39,7 @@ class ParentExampleModelWithLogWrapper(ModelWithLogWrapper):
     log_entry_model_wrapper_class = ExampleLogEntryModelWrapper
 
     parent_model_wrapper_class = ExampleModelWrapper
-    parent_lookup = 'example'
+    related_lookup = 'example'
 
 
 class TestModelWithLogWrapper(TestCase):
@@ -58,6 +49,12 @@ class TestModelWithLogWrapper(TestCase):
         wrapper = ModelWithLogWrapper(
             model_obj=example, next_url_name='listboard')
         self.assertEqual(wrapper.object, example)
+
+    def test_wrapper_repr(self):
+        example = Example.objects.create()
+        wrapper = ModelWithLogWrapper(
+            model_obj=example, next_url_name='listboard')
+        self.assertTrue(repr(wrapper))
 
     def test_wrapper_log(self):
         example = Example.objects.create()
@@ -126,7 +123,7 @@ class TestModelWithLogWrapper(TestCase):
             model_obj=example, next_url_name='listboard')
         self.assertEqual(len(wrapper.log_entries), 3)
 
-    def test_wrapper_picks_first_log_entry(self):
+    def test_wrapper_picks_most_recent_log_entry(self):
         example = Example.objects.create()
         example_log = ExampleLog.objects.create(example=example)
         report_datetime = get_utcnow() - timedelta(days=1)
@@ -147,21 +144,21 @@ class TestModelWithLogWrapper(TestCase):
 
 class TestModelWithLogWrapperUrls(TestCase):
 
-    @tag('5')
     def test_unrelated_wrapper_log(self):
         example = Example.objects.create()
-        uexample = UnrelatedExample.objects.create()
+        parent_example = ParentExample.objects.create(example=example)
         log = ExampleLog.objects.create(example=example)
         wrapper = ModelWithLogWrapper(
-            model_obj=uexample, next_url_name='listboard', lookup='example')
-        self.assertEqual(wrapper.log.object.unexample, log.example)
+            model_obj=parent_example, related_lookup='example', next_url_name='listboard')
+        self.assertEqual(wrapper.log.object.example, log.example)
 
-    @tag('2')
     def test_wrapper_urls(self):
         example = Example.objects.create()
         example_log = ExampleLog.objects.create(example=example)
         wrapper = ModelWithLogWrapper(
-            model_obj=example, next_url_name='listboard')
+            model_obj=example,
+            next_url_attrs=['example_identifier', 'example_log'],
+            next_url_name='listboard_url')
         self.assertIn(
             f'example_log={example_log.id}',
             wrapper.log_entry.next_url)
@@ -178,5 +175,5 @@ class TestModelWithLogWrapperUrls(TestCase):
             wrapper.log_entry.next_url.split('&')[0])
 
         self.assertIn(
-            'example_identifier={}'.format(self.example.example_identifier),
+            f'example_identifier={example.example_identifier}',
             wrapper.log_entry.next_url)

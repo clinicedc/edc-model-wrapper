@@ -1,6 +1,7 @@
 from urllib import parse
 
 from .keywords import Keywords
+from pprint import pprint
 
 
 class NextUrlError(Exception):
@@ -40,6 +41,10 @@ class NextUrlParser:
         self.url_namespace = url_namespace
 
     def querystring(self, objects=None, **kwargs):
+        """Returns a querystring or ''.
+
+            objects: a list of objects to from which to get attr values.
+        """
         if self.url_args:
             url_namespace = f'{self.url_namespace}:' if self.url_namespace else ''
             next_args = ',{}'.format(','.join(self.url_args))

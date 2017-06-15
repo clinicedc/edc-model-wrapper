@@ -62,38 +62,18 @@ class ModelWrapper:
                  url_namespace=None, **kwargs):
 
         self.object = model_obj
-        self.model = model or self.model
-        try:
-            self.model = django_apps.get_model(*self.model.split('.'))
-        except AttributeError:
-            pass
-        except ValueError as e:
-            raise ModelWrapperModelError(f'{e}. Got model={model}.')
+        self.model = self.model or self._get_model_cls_or_raise(
+            model_obj, model)
 
-        self.fields = self.fields_cls(
-            model_obj=self.object, model=self.model, **kwargs).fields
+        fields_obj = self.fields_cls(model_obj=self.object)
+        self.fields = fields_obj.get_field_values_as_strings
 
-        self.url_namespace = url_namespace or self.url_namespace
         self.querystring_attrs = querystring_attrs or self.querystring_attrs
         self.next_url_parser = self.next_url_parser_cls(
             url_name=next_url_name or self.next_url_name,
             url_args=next_url_attrs or self.next_url_attrs,
-            url_namespace=self.url_namespace,
+            url_namespace=url_namespace or self.url_namespace,
             ** kwargs)
-        # assert model obj can only be wrapped once.
-        try:
-            assert not self.object.wrapped
-        except AttributeError:
-            pass
-        except AssertionError:
-            raise ModelWrapperObjectAlreadyWrapped(
-                f'Model is already wrapped. Got {self.object}')
-        # ??
-#         for key, value in self.__dict__.items():
-#             if hasattr(value, 'wrapped'):
-#                 raise ModelWrapperInvalidProperty(
-#                     'Invalid property. Property may not return a wrapped object. '
-#                     f'Got {key}, {value}')
 
         # wrap me with kwargs
         for attr, value in kwargs.items():
@@ -103,14 +83,21 @@ class ModelWrapper:
         for name, value in self.fields(wrapper=self):
             setattr(self, name, value)
 
-        # wrap me with urls
+        # wrap me with next urls and it's required attrs
         self.next_url = self.next_url_parser.querystring(
             objects=[self, self.object], **kwargs)
+
+        # wrap me with admin urls
         self.get_absolute_url = self.object.get_absolute_url
         self.admin_url_name = f'{self.url_namespace}:{self.object.admin_url_name}'
+
+        # wrap with an additional querystring for extra values needed
+        # in the view
         keywords = self.keywords_cls(
             objects=[self], attrs=self.querystring_attrs, **kwargs)
         self.querystring = parse.urlencode(keywords, encoding='utf-8')
+
+        # flag as wrapped and disable save
         self.object.wrapped = True
         self.object.save = None
 
@@ -120,14 +107,43 @@ class ModelWrapper:
     def __bool__(self):
         return True if self.object.id else False
 
+    @property
     def _meta(self):
-        raise ModelWrapperError('This is not a model!')
+        return self.object._meta
 
-    @classmethod
-    def new(cls, **kwargs):
-        model = django_apps.get_model(*cls.model_name.split('.'))
-        return cls(model(), **kwargs)
+#     @classmethod
+#     def new(cls, **kwargs):
+#         model = django_apps.get_model(*cls.model_name.split('.'))
+#         return cls(model_obj=model(), model=model, **kwargs)
 
     @property
     def href(self):
         return f'{self.get_absolute_url()}?{self.next_url}&{self.querystring}'
+
+    def _get_model_cls_or_raise(self, model_obj, model=None):
+        """Returns the given model, as a class, or raises an exception.
+
+        Validates that the model instance (model_obj) is an instance
+        of model and the model instance is not a wrapped model instance.
+        """
+        if not model:
+            model_cls = model_obj.__class__
+        else:
+            try:
+                model_cls = django_apps.get_model(*model.split('.'))
+            except AttributeError:
+                model_cls = model
+            except ValueError as e:
+                raise ModelWrapperModelError(f'{e}. Got model={model}.')
+            if not isinstance(model_obj, model_cls):
+                raise ModelWrapperModelError(
+                    f'Expected an instance of {model}. Got model_obj={model_obj}')
+        # assert model obj can only be wrapped once.
+        try:
+            assert not model_obj.wrapped
+        except AttributeError:
+            pass
+        except AssertionError:
+            raise ModelWrapperObjectAlreadyWrapped(
+                f'Model is already wrapped. Got {model_obj}')
+        return model_cls

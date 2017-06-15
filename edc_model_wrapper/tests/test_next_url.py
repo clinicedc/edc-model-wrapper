@@ -1,9 +1,7 @@
-import uuid
-
-from urllib import parse
 from django.test import TestCase, tag
 
-from ..parsers import NextUrlParser, NextUrlError, Keywords
+from ..parsers import NextUrlParser, NextUrlError
+from .test_keywords import DummyObj
 
 
 class DummyObj:
@@ -13,38 +11,6 @@ class DummyObj:
         self.c = c
         self.d = d
         self.id = pk
-
-
-@tag('url')
-class TestKeywords(TestCase):
-
-    def test_url_parser(self):
-        obj = DummyObj(a=1, b=2)
-        keywords = Keywords(objects=[obj], attrs=['a', 'b'])
-        self.assertEqual(
-            parse.urlencode(keywords, encoding='utf-8'), 'a=1&b=2')
-
-    def test_url_parser_included_keys1(self):
-        obj = DummyObj(a=1, b=2)
-        keywords = Keywords(
-            objects=[obj], attrs=['a', 'b'], include_attrs=['a', 'b'])
-        self.assertEqual(
-            parse.urlencode(keywords, encoding='utf-8'), 'a=1&b=2')
-
-    def test_url_parser_included_keys2(self):
-        obj = DummyObj(a=1, b=2)
-        keywords = Keywords(
-            objects=[obj], attrs=['a', 'b'], include_attrs=['a'])
-        self.assertEqual(
-            parse.urlencode(keywords, encoding='utf-8'), 'a=1')
-
-    def test_url_parser_included_keys3(self):
-        pk = uuid.uuid4()
-        obj = DummyObj(a=1, b=None, pk=pk)
-        keywords = Keywords(
-            objects=[obj], attrs=['a', 'b', 'id'], include_attrs=['a', 'b', 'id'])
-        self.assertEqual(
-            parse.urlencode(keywords, encoding='utf-8'), f'a=1&b=&id={pk}')
 
 
 @tag('url')

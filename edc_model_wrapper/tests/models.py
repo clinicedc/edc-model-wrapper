@@ -1,4 +1,5 @@
-__all__ = ['Example', 'ParentExample', 'ExampleLog', 'ExampleLogEntry']
+__all__ = ['Example', 'ParentExample',
+           'SuperParentExample', 'UnrelatedExample', 'ExampleLog', 'ExampleLogEntry']
 
 import uuid
 
@@ -45,7 +46,21 @@ class ParentExample(BaseUuidModel):
 
     f3 = models.CharField(max_length=10, default=uuid.uuid4())
 
-    example = models.ForeignKey(Example)
+    example = models.ForeignKey(Example, null=True)
+
+    report_datetime = models.DateTimeField(
+        default=get_utcnow)
+
+
+class SuperParentExample(BaseUuidModel):
+
+    f1 = models.CharField(max_length=10)
+
+    f2 = models.CharField(max_length=10, null=True)
+
+    f3 = models.CharField(max_length=10, default=uuid.uuid4())
+
+    parent_example = models.ForeignKey(ParentExample)
 
     report_datetime = models.DateTimeField(
         default=get_utcnow)
