@@ -4,15 +4,6 @@ from ..parsers import NextUrlParser, NextUrlError
 from .test_keywords import DummyObj
 
 
-class DummyObj:
-    def __init__(self, a=None, b=None, c=None, d=None, pk=None):
-        self.a = a
-        self.b = b
-        self.c = c
-        self.d = d
-        self.id = pk
-
-
 @tag('url')
 class TestNextUrlParser(TestCase):
 
