@@ -18,17 +18,35 @@ class ModelWithLogWrapper:
     """
 
     fields_cls = Fields
-    model_wrapper_cls = ModelWrapper
-    log_model_wrapper_cls = ModelWrapper
-    log_entry_model_wrapper_cls = ModelWrapper
     model_relation_cls = LogModelRelation
 
-    related_lookup = None
-    querystring_attrs = None
+    model_wrapper_cls = ModelWrapper  # wrap model_obj, e.g. Example()
+    log_model_wrapper_cls = ModelWrapper  # wrap example_log
+    log_entry_model_wrapper_cls = ModelWrapper  # wrap example_log_entry
 
-    def __init__(self, model_obj=None, next_url_name=None, related_lookup=None,
-                 querystring_attrs=None, ordering=None, **kwargs):
+    related_lookup = None  # need if model_obj is not directly related to example_log
+
+    # attrs for model_wrapper_cls
+    model = None
+    querystring_attrs = []
+
+    # attrs for all three wrappers
+    url_namespace = None
+    next_url_name = None
+    next_url_attrs = []
+
+    def __init__(self, model_obj=None, model=None, next_url_name=None, related_lookup=None,
+                 querystring_attrs=None, next_url_attrs=None, url_namespace=None,
+                 ordering=None, **kwargs):
         self.object = model_obj
+        self.model = model or model_obj.__class__
+        self.model_name = model_obj._meta.object_name.lower().replace(' ', '_')
+
+        wrapper_options = dict(
+            next_url_attrs=next_url_attrs or self.next_url_attrs,
+            next_url_name=next_url_name or self.next_url_name,
+            url_namespace=url_namespace or self.url_namespace,
+            **kwargs)
 
         self.object_model = model_obj.__class__
         if related_lookup:
@@ -42,21 +60,22 @@ class ModelWithLogWrapper:
 
         # set log relation
         self.log_model = relation.log_model
+        setattr(self, f'{relation.log._meta.model_name}', relation.log)
         self.log = self.log_model_wrapper_cls(
             model_obj=relation.log,
             model=self.log_model,
-            next_url_name=next_url_name or self.next_url_name,
-            querystring_attrs=[self.object._meta.model_name],
-            ** kwargs)
+            querystring_attrs=[f'{self.model_name}_log'],
+            **wrapper_options)
 
         # set log_entry relation
         self.log_entry_model = relation.log_entry_model
+        setattr(self, f'{relation.log_entry._meta.model_name}',
+                relation.log_entry)
         self.log_entry = self.log_entry_model_wrapper_cls(
             model_obj=relation.log_entry,
             model=self.log_entry_model,
-            next_url_name=next_url_name or self.next_url_name,
-            querystring_attrs=[self.log._meta.model_name],
-            ** kwargs)
+            querystring_attrs=[f'{self.model_name}_log_entry'],
+            **wrapper_options)
 
         # log entries as a queryset
         self.log_entries = []
@@ -64,9 +83,8 @@ class ModelWithLogWrapper:
             wrapped = self.log_entry_model_wrapper_cls(
                 model_obj=log_entry,
                 model=self.log_entry_model,
-                next_url_name=next_url_name or self.next_url_name,
-                querystring_attrs=[self.log._meta.model_name],
-                **kwargs)
+                querystring_attrs=[f'{self.model_name}_log_entry'],
+                **wrapper_options)
             self.log_entries.append(wrapped)
 
         self.log_model_names = relation.model_names
@@ -74,8 +92,9 @@ class ModelWithLogWrapper:
         # wrap me as well
         wrapped_object = self.model_wrapper_cls(
             model_obj=model_obj,
-            next_url_name=next_url_name or self.next_url_name,
-            querystring_attrs=querystring_attrs or self.querystring_attrs)
+            model=self.model,
+            querystring_attrs=querystring_attrs or self.querystring_attrs,
+            **wrapper_options)
         for k, v in wrapped_object.__dict__.items():
             try:
                 getattr(self, k)

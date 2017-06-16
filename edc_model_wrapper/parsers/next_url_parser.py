@@ -1,7 +1,6 @@
 from urllib import parse
 
 from .keywords import Keywords
-from pprint import pprint
 
 
 class NextUrlError(Exception):
@@ -55,6 +54,3 @@ class NextUrlParser:
             querystring = parse.urlencode(keywords, encoding='utf-8')
             return f'{url_namespace}{self.url_name}{next_args}&{querystring}'
         return ''
-
-#     def reverse(self):
-#         return reverse(self.url_name, kwargs=self._next_kwargs)

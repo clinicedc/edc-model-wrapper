@@ -1,9 +1,7 @@
 from django.test import TestCase, tag
 
-from ..wrappers import Fields
+from ..wrappers import Fields, ModelWrapper
 from .models import Example, ParentExample
-from edc_model_wrapper.wrappers.model_wrapper import ModelWrapper
-from pprint import pprint
 
 
 @tag('fields')

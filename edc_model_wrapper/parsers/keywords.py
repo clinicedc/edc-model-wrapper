@@ -24,13 +24,23 @@ class Keywords(OrderedDict):
                 for obj in objects:
                     if value:
                         break
+                    value = self.getattr(attr, obj)
                     try:
-                        value = getattr(obj, attr)
+                        value = str(value.id)
                     except AttributeError:
-                        value = None
-                    else:
-                        try:
-                            value = str(value.id)
-                        except AttributeError:
-                            pass
+                        pass
             self.update({attr: value or ''})
+
+    def getattr(self, attr=None, obj=None):
+        value = None
+        try:
+            value = getattr(obj, attr)
+        except AttributeError:
+            pass
+        if not value:
+            try:
+                # assume reverse rel, remove underscore
+                value = getattr(obj, attr.replace('_', ''))
+            except AttributeError:
+                pass
+        return value

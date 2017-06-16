@@ -3,8 +3,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.test import TestCase, tag
 
 from ..wrappers import ModelWrapper, ModelWrapperObjectAlreadyWrapped, ModelWrapperModelError
-from .models import Example, Appointment, SubjectVisit
-from edc_model_wrapper.tests.models import ParentExample
+from .models import Example, Appointment, SubjectVisit, ParentExample
 
 
 @admin.register(Example)
@@ -154,6 +153,17 @@ class TestExampleWrappers(TestCase):
         model_obj = Example(f1=1, f2=2, f3=3)
         wrapper = self.wrapper_cls(model_obj=model_obj)
         self.assertEqual(wrapper.object, model_obj)
+
+    def test_model_wrapper_model_querystring(self):
+        model_obj = Example(f1=1, f2=2, f3=3)
+        wrapper = self.wrapper_cls(model_obj=model_obj)
+        self.assertEqual(wrapper.querystring, 'f2=2&f3=3')
+
+    def test_model_wrapper_model_next_url(self):
+        model_obj = Example(f1=1, f2=2, f3=3)
+        wrapper = self.wrapper_cls(model_obj=model_obj)
+        self.assertEqual(
+            wrapper.next_url, 'edc-model-wrapper:listboard_url,f1&f1=1')
 
     def test_example_href(self):
         model_obj = Example(f1=1, f2=2, f3=3)

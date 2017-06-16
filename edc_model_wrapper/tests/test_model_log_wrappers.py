@@ -123,6 +123,21 @@ class TestModelWithLogWrapper(TestCase):
         self.assertIsNone(wrapper.log.object.id)
         self.assertIsNone(wrapper.log_entry.object.id)
 
+    def test_wrapper_has_log_by_model_name(self):
+        example = Example.objects.create()
+        log = ExampleLog.objects.create(example=example)
+        wrapper = ModelWithLogWrapper(
+            model_obj=example, next_url_name='listboard')
+        self.assertEqual(wrapper.examplelog, log)
+
+    def test_wrapper_has_logentry_by_model_name(self):
+        example = Example.objects.create()
+        log = ExampleLog.objects.create(example=example)
+        log_entry = ExampleLogEntry.objects.create(example_log=log)
+        wrapper = ModelWithLogWrapper(
+            model_obj=example, next_url_name='listboard')
+        self.assertEqual(wrapper.examplelogentry, log_entry)
+
     def test_wrapper_no_entries(self):
         example = Example.objects.create()
         ExampleLog.objects.create(example=example)
@@ -194,3 +209,21 @@ class TestModelWithLogWrapperUrls(TestCase):
         self.assertIn(
             f'example_identifier={example.example_identifier}',
             wrapper.log_entry.next_url)
+
+    @tag('1')
+    def test_wrapper_next_url(self):
+        example_identifier = '111111111'
+        example = Example.objects.create(example_identifier=example_identifier)
+        example_log = ExampleLog.objects.create(example=example)
+        ExampleLogEntry.objects.create(
+            example_log=example_log)
+        wrapper = ModelWithLogWrapper(
+            model_obj=example,
+            next_url_attrs=['example_identifier', 'example_log'],
+            next_url_name='listboard_url')
+        self.assertIsNotNone(wrapper.next_url)
+        self.assertTrue(wrapper.next_url != '')
+        self.assertEqual(
+            wrapper.next_url,
+            f'listboard_url,example_identifier,example_log'
+            f'&example_identifier={example_identifier}&example_log={str(example_log.id)}')
