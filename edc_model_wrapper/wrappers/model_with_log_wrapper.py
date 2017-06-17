@@ -1,3 +1,5 @@
+from django.utils.text import camel_case_to_spaces
+
 from .fields import Fields
 from .model_relation import LogModelRelation
 from .model_wrapper import ModelWrapper
@@ -42,7 +44,7 @@ class ModelWithLogWrapper:
         self.model = model or model_obj.__class__
         self.model_name = model_obj._meta.object_name.lower().replace(' ', '_')
 
-        wrapper_options = dict(
+        self.wrapper_options = dict(
             next_url_attrs=next_url_attrs or self.next_url_attrs,
             next_url_name=next_url_name or self.next_url_name,
             url_namespace=url_namespace or self.url_namespace,
@@ -60,31 +62,40 @@ class ModelWithLogWrapper:
 
         # set log relation
         self.log_model = relation.log_model
-        setattr(self, f'{relation.log._meta.model_name}', relation.log)
+        log_attrname = camel_case_to_spaces(
+            relation.log._meta.object_name).lower().replace(" ", "_")
+        setattr(self, log_attrname, relation.log)
+        setattr(self, relation.log._meta.model_name, relation.log)
         self.log = self.log_model_wrapper_cls(
             model_obj=relation.log,
             model=self.log_model,
-            querystring_attrs=[f'{self.model_name}_log'],
-            **wrapper_options)
+            querystring_attrs=[f'{self.model_name}'],
+            **self.wrapper_options)
 
         # set log_entry relation
         self.log_entry_model = relation.log_entry_model
-        setattr(self, f'{relation.log_entry._meta.model_name}',
+        setattr(self, camel_case_to_spaces(
+            relation.log_entry._meta.object_name).lower().replace(" ", "_"),
+            relation.log_entry)
+        setattr(self, relation.log_entry._meta.model_name,
                 relation.log_entry)
         self.log_entry = self.log_entry_model_wrapper_cls(
             model_obj=relation.log_entry,
             model=self.log_entry_model,
-            querystring_attrs=[f'{self.model_name}_log_entry'],
-            **wrapper_options)
+            querystring_attrs=[f'{self.model_name}_log'],
+            **{log_attrname: str(relation.log.id)},
+            **self.wrapper_options)
 
         # log entries as a queryset
         self.log_entries = []
+        setattr(self, relation.log._meta.model_name, relation.log)
         for log_entry in relation.log_entries:
             wrapped = self.log_entry_model_wrapper_cls(
                 model_obj=log_entry,
                 model=self.log_entry_model,
-                querystring_attrs=[f'{self.model_name}_log_entry'],
-                **wrapper_options)
+                querystring_attrs=[f'{self.model_name}_log'],
+                **{log_attrname: str(relation.log.id)},
+                **self.wrapper_options)
             self.log_entries.append(wrapped)
 
         self.log_model_names = relation.model_names
@@ -94,7 +105,8 @@ class ModelWithLogWrapper:
             model_obj=model_obj,
             model=self.model,
             querystring_attrs=querystring_attrs or self.querystring_attrs,
-            **wrapper_options)
+            **self.wrapper_options)
+
         for k, v in wrapped_object.__dict__.items():
             try:
                 getattr(self, k)

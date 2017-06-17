@@ -62,6 +62,7 @@ class ModelWrapper:
                  url_namespace=None, **kwargs):
 
         self.object = model_obj
+        self.model_name = model_obj._meta.object_name.lower().replace(' ', '_')
         self.model = self.model or self._get_model_cls_or_raise(
             model_obj, model)
 
@@ -110,11 +111,6 @@ class ModelWrapper:
     @property
     def _meta(self):
         return self.object._meta
-
-#     @classmethod
-#     def new(cls, **kwargs):
-#         model = django_apps.get_model(*cls.model_name.split('.'))
-#         return cls(model_obj=model(), model=model, **kwargs)
 
     @property
     def href(self):
