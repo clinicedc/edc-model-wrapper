@@ -17,7 +17,7 @@ class ExampleModelWrapper(ModelWrapper):
 
 class ParentExampleModelWrapper(ModelWrapper):
 
-    model_name = 'edc_model_wrapper.parentexample'
+    model = 'edc_model_wrapper.parentexample'
     next_url_attrs = ['f1']
     querystring_attrs = ['f2', 'f3']
     url_attrs = ['f1', 'f2', 'f3']
@@ -26,7 +26,7 @@ class ParentExampleModelWrapper(ModelWrapper):
 
 class ExampleLogEntryModelWrapper(ModelWrapper):
 
-    model_name = 'edc_model_wrapper.examplelogentry'
+    model = 'edc_model_wrapper.examplelogentry'
     next_url_attrs = ['example_identifier', 'example_log']
     querystring_attrs = ['f2', 'f3']
     url_attrs = ['example_identifier', 'example_log']

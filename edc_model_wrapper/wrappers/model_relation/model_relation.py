@@ -1,6 +1,5 @@
 from django.apps import apps as django_apps
 from django.core.exceptions import MultipleObjectsReturned
-from pprint import pprint
 
 
 class ModelRelation:

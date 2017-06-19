@@ -27,6 +27,8 @@ class ModelWithLogWrapper:
     log_entry_model_wrapper_cls = ModelWrapper  # wrap example_log_entry
 
     related_lookup = None  # need if model_obj is not directly related to example_log
+    log_model_name = None
+    log_entry_model_name = None
 
     # attrs for model_wrapper_cls
     model = None
@@ -38,8 +40,8 @@ class ModelWithLogWrapper:
     next_url_attrs = []
 
     def __init__(self, model_obj=None, model=None, next_url_name=None, related_lookup=None,
-                 querystring_attrs=None, next_url_attrs=None, url_namespace=None,
-                 ordering=None, **kwargs):
+                 log_model_name=None, log_entry_model_name=None, querystring_attrs=None,
+                 next_url_attrs=None, url_namespace=None, ordering=None, **kwargs):
         self.object = model_obj
         self.model = model or model_obj.__class__
         self.model_name = model_obj._meta.object_name.lower().replace(' ', '_')
@@ -53,11 +55,17 @@ class ModelWithLogWrapper:
         self.object_model = model_obj.__class__
         if related_lookup:
             self.related_lookup = related_lookup
+        if log_model_name:
+            self.log_model_name = log_model_name
+        if log_entry_model_name:
+            self.log_entry_model_name = log_entry_model_name
 
         # determine relation to log and to log_entry
         relation = self.model_relation_cls(
             model_obj=model_obj,
             related_lookup=self.related_lookup,
+            log_model_name=self.log_model_name,
+            log_entry_model_name=self.log_entry_model_name,
             ordering=ordering)
 
         # set log relation
