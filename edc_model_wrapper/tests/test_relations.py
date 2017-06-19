@@ -44,15 +44,46 @@ class TestLogModelRelations(TestCase):
             example_log=self.example_log)
 
     def test_log_model_relations(self):
+        model_relations = LogModelRelation(model_obj=self.example)
+        self.assertEqual(model_relations.log_model, ExampleLog)
+        self.assertEqual(model_relations.log_entry_model, ExampleLogEntry)
+
+    def test_log_model_relations1(self):
+        model_relations = LogModelRelation(
+            model_obj=self.example,
+            log_model_name='example_log',
+            log_entry_model_name='example_log_entry')
+        self.assertEqual(model_relations.log_model, ExampleLog)
+        self.assertEqual(model_relations.log_entry_model, ExampleLogEntry)
+
+    def test_log_model_relations2(self):
         model_relations = LogModelRelation(
             model_obj=self.parent_example,
             related_lookup='example')
         self.assertEqual(model_relations.log_model, ExampleLog)
         self.assertEqual(model_relations.log_entry_model, ExampleLogEntry)
 
-    def test_log_model_relations2(self):
+    def test_log_model_relations3(self):
+        model_relations = LogModelRelation(
+            model_obj=self.parent_example,
+            related_lookup='example',
+            log_model_name='example_log',
+            log_entry_model_name='example_log_entry')
+        self.assertEqual(model_relations.log_model, ExampleLog)
+        self.assertEqual(model_relations.log_entry_model, ExampleLogEntry)
+
+    def test_log_model_relations4(self):
         model_relations = LogModelRelation(
             model_obj=self.super_parent_example,
             related_lookup='parent_example__example')
+        self.assertEqual(model_relations.log_model, ExampleLog)
+        self.assertEqual(model_relations.log_entry_model, ExampleLogEntry)
+
+    def test_log_model_relations5(self):
+        model_relations = LogModelRelation(
+            model_obj=self.super_parent_example,
+            related_lookup='parent_example__example',
+            log_model_name='example_log',
+            log_entry_model_name='example_log_entry')
         self.assertEqual(model_relations.log_model, ExampleLog)
         self.assertEqual(model_relations.log_entry_model, ExampleLogEntry)

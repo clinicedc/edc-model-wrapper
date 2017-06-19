@@ -27,7 +27,7 @@ class ModelWrapper:
 
     Keyword args:
         model_obj: An instance of a model class
-        model_name: name of model class that wrapper accepts,
+        model: name of model class that wrapper accepts,
             if specified. (Default: None)
 
     Set attrs, flatten relations, adds admin and next urls,
@@ -78,13 +78,17 @@ class ModelWrapper:
 
         # wrap me with kwargs
         for attr, value in kwargs.items():
-            setattr(self, attr, value)
+            try:
+                setattr(self, attr, value)
+            except AttributeError:
+                pass
+                # raise AttributeError(f'{e}. Got {attr}')
 
         # wrap me with field attrs
         for name, value in self.fields(wrapper=self):
             setattr(self, name, value)
 
-        # wrap me with next urls and it's required attrs
+        # wrap me with next url and it's required attrs
         self.next_url = self.next_url_parser.querystring(
             objects=[self, self.object], **kwargs)
 

@@ -3,6 +3,7 @@ from django.utils.text import camel_case_to_spaces
 from .fields import Fields
 from .model_relation import LogModelRelation
 from .model_wrapper import ModelWrapper
+from pprint import pprint
 
 
 class ModelWithLogWrapperError(Exception):
@@ -109,13 +110,13 @@ class ModelWithLogWrapper:
         self.log_model_names = relation.model_names
 
         # wrap me as well
-        wrapped_object = self.model_wrapper_cls(
+        self.wrapped_object = self.model_wrapper_cls(
             model_obj=model_obj,
             model=self.model,
             querystring_attrs=querystring_attrs or self.querystring_attrs,
             **self.wrapper_options)
 
-        for k, v in wrapped_object.__dict__.items():
+        for k, v in self.wrapped_object.__dict__.items():
             try:
                 getattr(self, k)
             except AttributeError:
@@ -128,3 +129,7 @@ class ModelWithLogWrapper:
     @property
     def _meta(self):
         return self.object._meta
+
+    @property
+    def href(self):
+        return self.wrapped_object.href

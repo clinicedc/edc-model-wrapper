@@ -35,10 +35,10 @@ class ExampleLogEntryModelWrapper(ModelWrapper):
 
 class ParentExampleModelWithLogWrapper(ModelWithLogWrapper):
 
-    model_wrapper_class = ParentExampleModelWrapper
-    log_entry_model_wrapper_class = ExampleLogEntryModelWrapper
+    model_wrapper_cls = ParentExampleModelWrapper
+    log_entry_model_wrapper_cls = ExampleLogEntryModelWrapper
 
-    parent_model_wrapper_class = ExampleModelWrapper
+    parent_model_wrapper_cls = ExampleModelWrapper
     related_lookup = 'example'
 
 

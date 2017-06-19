@@ -1,2 +1,2 @@
 from .wrappers import ModelWithLogWrapper, ModelWithLogWrapperError
-from .wrappers import ModelWrapper, ModelWrapperError
+from .wrappers import ModelWrapper, ModelWrapperError, LogModelRelation, ModelRelation

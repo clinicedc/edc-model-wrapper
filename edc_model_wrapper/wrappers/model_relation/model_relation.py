@@ -1,5 +1,9 @@
 from django.apps import apps as django_apps
-from django.core.exceptions import MultipleObjectsReturned
+from django.core.exceptions import MultipleObjectsReturned, FieldError
+
+
+class ModelRelationError(Exception):
+    pass
 
 
 class ModelRelation:
@@ -9,7 +13,7 @@ class ModelRelation:
              schema_attrs=['plot', 'plot_log', 'plot_log_entry']
     """
 
-    def __init__(self, model_obj=None, schema=None, ordering=None):
+    def __init__(self, model_obj=None, schema=None, ordering=None, **kwargs):
         self.ordering = ordering or '-report_datetime'
         self.model_obj = model_obj
         self.models = [model_obj.__class__]
@@ -18,17 +22,23 @@ class ModelRelation:
         parent = schema[0]
         parent_obj = model_obj
         for relation in schema[1:]:
-            # set model class; e.g. self.log_model
+
             label_lower = f'{model_obj._meta.app_label}.{relation.replace("_", "")}'
+
+            # get and collect model class
             model_cls = django_apps.get_model(*label_lower.split('.'))
             self.models.append(model_cls)
+
+            # set model class attr; e.g. self.log_model
             model_cls_attr = f'{relation.replace(f"{schema[0]}_", "")}_model'
             setattr(self, model_cls_attr, model_cls)
+
             # set instance, e.g. self.log
             obj = self._get_relation_obj(
                 model=model_cls, **{parent: parent_obj})
             obj_attr = relation.replace(f'{schema[0]}_', '')
             setattr(self, obj_attr, obj)
+
             # set values for next loop
             parent = relation
             parent_obj = obj
@@ -47,4 +57,7 @@ class ModelRelation:
             obj = model(**options)
         except MultipleObjectsReturned:
             obj = model.objects.filter(**options).order_by(self.ordering)[0]
+        except FieldError as e:
+            raise ModelRelationError(
+                f'{e} For model={repr(model)}, options={options}.')
         return obj
