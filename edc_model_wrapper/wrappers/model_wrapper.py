@@ -81,8 +81,8 @@ class ModelWrapper:
             try:
                 setattr(self, attr, value)
             except AttributeError:
+                # skip if attr cannot be overwritten
                 pass
-                # raise AttributeError(f'{e}. Got {attr}')
 
         # wrap me with field attrs
         for name, value in self.fields(wrapper=self):

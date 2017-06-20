@@ -165,12 +165,22 @@ class TestExampleWrappers(TestCase):
         self.assertEqual(
             wrapper.next_url, 'edc-model-wrapper:listboard_url,f1&f1=1')
 
-    def test_example_href(self):
+    def test_example_href_add(self):
         model_obj = Example(f1=1, f2=2, f3=3)
         wrapper = self.wrapper_cls(model_obj=model_obj)
         self.assertEqual(
             wrapper.href,
-            '/admin/edc_model_wrapper/example/add/?next=edc-model-wrapper:listboard_url,f1&f1=1&f2=2&f3=3')
+            '/admin/edc_model_wrapper/example/add/?next=edc-model-wrapper:listboard_url,'
+            'f1&f1=1&f2=2&f3=3')
+
+    def test_example_href_change(self):
+        model_obj = Example(f1=1, f2=2, f3=3)
+        model_obj.save()
+        wrapper = self.wrapper_cls(model_obj=model_obj)
+        self.assertEqual(
+            wrapper.href,
+            f'/admin/edc_model_wrapper/example/{model_obj.pk}/change/?next=edc-model-'
+            'wrapper:listboard_url,f1&f1=1&f2=2&f3=3')
 
     def test_model_wrapper_admin_urls_add(self):
         model_obj = Example(f1=1, f2=2, f3=3)
