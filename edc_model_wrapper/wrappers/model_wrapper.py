@@ -3,6 +3,7 @@ from urllib import parse
 
 from ..parsers import NextUrlParser, Keywords
 from .fields import Fields
+from django.urls.base import reverse
 
 
 class ModelWrapperError(Exception):
@@ -118,6 +119,8 @@ class ModelWrapper:
 
     @property
     def href(self):
+        """Returns the admin url with next url and FK data in the querystring.
+        """
         return f'{self.get_absolute_url()}?next={self.next_url}&{self.querystring}'
 
     def _get_model_cls_or_raise(self, model_obj, model=None):
