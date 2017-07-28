@@ -3,7 +3,6 @@ from urllib import parse
 
 from ..parsers import NextUrlParser, Keywords
 from .fields import Fields
-from django.urls.base import reverse
 
 
 class ModelWrapperError(Exception):
