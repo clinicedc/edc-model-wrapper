@@ -45,12 +45,11 @@ class NextUrlParser:
             objects: a list of objects to from which to get attr values.
         """
         if self.url_args:
-            url_namespace = f'{self.url_namespace}:' if self.url_namespace else ''
             next_args = ',{}'.format(','.join(self.url_args))
             url_kwargs = {
                 k: v for k, v in kwargs.items() if k in (self.url_args or [])}
             keywords = self.keywords_cls(
                 objects=objects, attrs=self.url_args, include_attrs=self.url_args, **url_kwargs)
             querystring = parse.urlencode(keywords, encoding='utf-8')
-            return f'{url_namespace}{self.url_name}{next_args}&{querystring}'
+            return f'{self.url_name}{next_args}&{querystring}'
         return ''
