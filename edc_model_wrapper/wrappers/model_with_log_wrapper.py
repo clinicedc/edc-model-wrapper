@@ -3,7 +3,6 @@ from django.utils.text import camel_case_to_spaces
 from .fields import Fields
 from .model_relation import LogModelRelation
 from .model_wrapper import ModelWrapper
-from pprint import pprint
 
 
 class ModelWithLogWrapperError(Exception):
