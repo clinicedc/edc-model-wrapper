@@ -105,6 +105,11 @@ class ModelWrapper:
         # flag as wrapped and disable save
         self.object.wrapped = True
         self.object.save = None
+        self.add_extra_attributes_after()
+
+    def add_extra_attributes_after(self, **kwargs):
+        """Called after the model is wrapped."""
+        pass
 
     def __repr__(self):
         return f'{self.__class__.__name__}({self.object} id={self.object.id})'
