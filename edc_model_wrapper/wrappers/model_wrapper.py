@@ -4,6 +4,7 @@ from urllib import parse
 
 from ..parsers import NextUrlParser, Keywords
 from .fields import Fields
+from django.urls.exceptions import NoReverseMatch
 
 
 class ModelWrapperError(Exception):
@@ -19,6 +20,10 @@ class ModelWrapperObjectAlreadyWrapped(Exception):
 
 
 class ModelWrapperInvalidProperty(Exception):
+    pass
+
+
+class ModelWrapperNoReverseMatch(Exception):
     pass
 
 
@@ -111,13 +116,17 @@ class ModelWrapper:
 
         # reverse admin url (must be registered w/ the site admin)
         self.href = f'{self.get_absolute_url()}?next={self.next_url}&{self.querystring}'
-        self.reverse()
 
     def reverse(self):
         """Returns the reversed next_url_name or None.
         """
         if self.next_url_name:
-            next_url = reverse(f'{self.next_url_name}', kwargs=self.keywords)
+            try:
+                next_url = reverse(
+                    f'{self.next_url_name}', kwargs=self.keywords)
+            except NoReverseMatch as e:
+                raise ModelWrapperNoReverseMatch(
+                    f'next_url_name={self.next_url_name}. Got {e}')
         else:
             next_url = None
         return next_url
