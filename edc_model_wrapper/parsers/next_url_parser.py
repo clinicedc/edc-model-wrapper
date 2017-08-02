@@ -32,13 +32,11 @@ class NextUrlParser:
     """
     keywords_cls = Keywords
 
-    def __init__(self, url_name=None, url_args=None, url_namespace=None, **kwargs):
+    def __init__(self, url_name=None, url_args=None):
         if not url_name:
             raise NextUrlError(f'Invalid url_name. Got {url_name}')
-        self.url_name = url_name
+        self.url_name = url_name  # may include url_namespace
         self.url_args = url_args
-        if url_namespace:
-            self.url_name = f'{url_namespace}:{self.url_name}'
 
     def querystring(self, objects=None, **kwargs):
         """Returns a querystring or ''.

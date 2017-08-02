@@ -53,14 +53,12 @@ class ModelWrapper:
     next_url_parser_cls = NextUrlParser
 
     model = None  # class or label_lower
-    url_namespace = None
-    next_url_name = None
+    next_url_name = None  # should include namespace:url_name
     next_url_attrs = []
     querystring_attrs = []
 
     def __init__(self, model_obj=None, model=None, next_url_name=None,
-                 next_url_attrs=None, querystring_attrs=None,
-                 url_namespace=None, **kwargs):
+                 next_url_attrs=None, querystring_attrs=None, **kwargs):
 
         self.object = model_obj
         self.model_name = model_obj._meta.object_name.lower().replace(' ', '_')
@@ -73,9 +71,7 @@ class ModelWrapper:
         self.querystring_attrs = querystring_attrs or self.querystring_attrs
         self.next_url_parser = self.next_url_parser_cls(
             url_name=next_url_name or self.next_url_name,
-            url_args=next_url_attrs or self.next_url_attrs,
-            url_namespace=url_namespace or self.url_namespace,
-            ** kwargs)
+            url_args=next_url_attrs or self.next_url_attrs)
 
         # wrap me with kwargs
         for attr, value in kwargs.items():
@@ -99,7 +95,8 @@ class ModelWrapper:
 
         # wrap me with admin urls
         self.get_absolute_url = self.object.get_absolute_url
-        self.admin_url_name = f'{self.url_namespace}:{self.object.admin_url_name}'
+        # see also UrlMixin.admin_url_name
+        self.admin_url_name = f'{self.object.admin_url_name}'
 
         # wrap with an additional querystring for extra values needed
         # in the view
@@ -120,8 +117,7 @@ class ModelWrapper:
         """Returns the reversed next_url_name or None.
         """
         if self.next_url_name:
-            next_url = reverse(
-                f'{self.url_namespace}:{self.next_url_name}', kwargs=self.keywords)
+            next_url = reverse(f'{self.next_url_name}', kwargs=self.keywords)
         else:
             next_url = None
         return next_url

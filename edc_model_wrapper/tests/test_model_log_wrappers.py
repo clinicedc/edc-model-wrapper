@@ -9,8 +9,7 @@ from .models import Example, ExampleLog, ExampleLogEntry, ParentExample
 
 class ExampleModelWrapper(ModelWrapper):
     model = 'edc_model_wrapper.example'
-    url_namespace = 'edc-model-wrapper'
-    next_url_name = 'listboard_url'
+    next_url_name = 'edc-model-wrapper:listboard_url'
     next_url_attrs = ['f1']
     querystring_attrs = ['f2', 'f3']
 
@@ -18,19 +17,17 @@ class ExampleModelWrapper(ModelWrapper):
 class ParentExampleModelWrapper(ModelWrapper):
 
     model = 'edc_model_wrapper.parentexample'
+    next_url_name = 'edc-model-wrapper:listboard_url'
     next_url_attrs = ['f1']
     querystring_attrs = ['f2', 'f3']
-    url_attrs = ['f1', 'f2', 'f3']
-    url_namespace = 'edc-model-wrapper'
 
 
 class ExampleLogEntryModelWrapper(ModelWrapper):
 
     model = 'edc_model_wrapper.examplelogentry'
+    next_url_name = 'edc-model-wrapper:listboard_url'
     next_url_attrs = ['example_identifier', 'example_log']
     querystring_attrs = ['f2', 'f3']
-    url_attrs = ['example_identifier', 'example_log']
-    url_namespace = 'edc-model-wrapper'
 
 
 class ParentExampleModelWithLogWrapper(ModelWithLogWrapper):
