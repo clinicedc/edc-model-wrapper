@@ -37,7 +37,8 @@ class NextUrlParser:
             raise NextUrlError(f'Invalid url_name. Got {url_name}')
         self.url_name = url_name
         self.url_args = url_args
-        self.url_namespace = url_namespace
+        if url_namespace:
+            self.url_name = f'{url_namespace}:{self.url_name}'
 
     def querystring(self, objects=None, **kwargs):
         """Returns a querystring or ''.

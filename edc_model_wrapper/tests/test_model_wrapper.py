@@ -188,7 +188,6 @@ class TestExampleWrappers(TestCase):
             wrapper.admin_url_name,
             'edc-model-wrapper:edc_model_wrapper_admin:edc_model_wrapper_example_add')
 
-    @tag('1')
     def test_model_wrapper_admin_urls_change(self):
         model_obj = Example(f1=1, f2=2, f3=3)
         model_obj.save()

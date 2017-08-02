@@ -87,7 +87,11 @@ class ModelWrapper:
 
         # wrap me with field attrs
         for name, value in self.fields(wrapper=self):
-            setattr(self, name, value)
+            try:
+                setattr(self, name, value)
+            except AttributeError:
+                # skip if attr cannot be overwritten
+                pass
 
         # wrap me with next url and it's required attrs
         self.next_url = self.next_url_parser.querystring(
@@ -99,23 +103,28 @@ class ModelWrapper:
 
         # wrap with an additional querystring for extra values needed
         # in the view
-        keywords = self.keywords_cls(
+        self.keywords = self.keywords_cls(
             objects=[self], attrs=self.querystring_attrs, **kwargs)
-        self.querystring = parse.urlencode(keywords, encoding='utf-8')
+        self.querystring = parse.urlencode(self.keywords, encoding='utf-8')
 
         # flag as wrapped and disable save
         self.object.wrapped = True
         self.object.save = None
         self.add_extra_attributes_after()
 
-        # reverse the next_url_name
-        if self.next_url_name:
-            self.reverse = reverse(self.next_url_name, kwargs=keywords)
-        else:
-            self.reverse = None
-
         # reverse admin url (must be registered w/ the site admin)
         self.href = f'{self.get_absolute_url()}?next={self.next_url}&{self.querystring}'
+        self.reverse()
+
+    def reverse(self):
+        """Returns the reversed next_url_name or None.
+        """
+        if self.next_url_name:
+            next_url = reverse(
+                f'{self.url_namespace}:{self.next_url_name}', kwargs=self.keywords)
+        else:
+            next_url = None
+        return next_url
 
     def add_extra_attributes_after(self, **kwargs):
         """Called after the model is wrapped."""
