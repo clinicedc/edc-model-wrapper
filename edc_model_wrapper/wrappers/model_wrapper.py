@@ -1,5 +1,4 @@
 from django.apps import apps as django_apps
-from django.urls.base import reverse
 from urllib import parse
 
 from ..parsers import NextUrlParser, Keywords
@@ -120,15 +119,11 @@ class ModelWrapper:
     def reverse(self):
         """Returns the reversed next_url_name or None.
         """
-        if self.next_url_name:
-            try:
-                next_url = reverse(
-                    f'{self.next_url_name}', kwargs=self.keywords)
-            except NoReverseMatch as e:
-                raise ModelWrapperNoReverseMatch(
-                    f'next_url_name={self.next_url_name}. Got {e}')
-        else:
-            next_url = None
+        try:
+            next_url = self.next_url_parser.reverse(model_wrapper=self)
+        except NoReverseMatch as e:
+            raise ModelWrapperNoReverseMatch(
+                f'next_url_name={self.next_url_name}. Got {e}')
         return next_url
 
     def add_extra_attributes_after(self, **kwargs):

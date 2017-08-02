@@ -1,4 +1,6 @@
 from urllib import parse
+from django.urls.base import reverse
+from django.urls.exceptions import NoReverseMatch
 
 from .keywords import Keywords
 
@@ -24,10 +26,10 @@ class NextUrlParser:
     value2&arg3=value3&arg4=value4...etc.
 
     * next_url_attrs:
-        A dict with a list of querystring attrs to include in the next url.
+        A list of querystring attrs to include in the next url.
 
         Format is:
-            {key1: [param1, param2, ...], key2: [param1, param2, ...]}
+            [param1, param2, ...]
 
     """
     keywords_cls = Keywords
@@ -52,3 +54,8 @@ class NextUrlParser:
             querystring = parse.urlencode(keywords, encoding='utf-8')
             return f'{self.url_name}{next_args}&{querystring}'
         return ''
+
+    def reverse(self, model_wrapper=None):
+        keywords = self.keywords_cls(
+            objects=[model_wrapper], attrs=self.url_args)
+        return reverse(f'{self.url_name}', kwargs=keywords)
