@@ -1,5 +1,4 @@
-import sys
+from django.conf import settings
 
-if 'test' in sys.argv:
-    from .tests.models import Example, ParentExample, SuperParentExample
-    from .tests.models import UnrelatedExample, ExampleLog, ExampleLogEntry
+if settings.APP_NAME == 'edc_model_wrapper':
+    from .tests.models import *

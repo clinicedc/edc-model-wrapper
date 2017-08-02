@@ -21,7 +21,6 @@ class SubjectVisitAdmin(admin.ModelAdmin):
     pass
 
 
-@tag('model_wrapper')
 class TestModelWrapper(TestCase):
 
     def test_model_wrapper(self):
@@ -186,14 +185,17 @@ class TestExampleWrappers(TestCase):
         model_obj = Example(f1=1, f2=2, f3=3)
         wrapper = self.wrapper_cls(model_obj=model_obj)
         self.assertEqual(
-            wrapper.admin_url_name, 'edc-model-wrapper:admin:edc_model_wrapper_example_add')
+            wrapper.admin_url_name,
+            'edc-model-wrapper:edc_model_wrapper_admin:edc_model_wrapper_example_add')
 
+    @tag('1')
     def test_model_wrapper_admin_urls_change(self):
         model_obj = Example(f1=1, f2=2, f3=3)
         model_obj.save()
         wrapper = self.wrapper_cls(model_obj=model_obj)
         self.assertEqual(
-            wrapper.admin_url_name, 'edc-model-wrapper:admin:edc_model_wrapper_example_change')
+            wrapper.admin_url_name,
+            'edc-model-wrapper:edc_model_wrapper_admin:edc_model_wrapper_example_change')
 
     def test_model_wrapper_fields(self):
         model_obj = Example(f1=1, f2=2, f3=3)

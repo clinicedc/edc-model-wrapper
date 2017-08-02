@@ -4,7 +4,6 @@ from ..parsers import NextUrlParser, NextUrlError
 from .test_keywords import DummyObj
 
 
-@tag('url')
 class TestNextUrlParser(TestCase):
 
     def test_url_parser(self):

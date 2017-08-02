@@ -210,7 +210,6 @@ class TestModelWithLogWrapperUrls(TestCase):
             f'example_identifier={example.example_identifier}',
             wrapper.log_entry.next_url)
 
-    @tag('1')
     def test_wrapper_next_url(self):
         example_identifier = '111111111'
         example = Example.objects.create(example_identifier=example_identifier)

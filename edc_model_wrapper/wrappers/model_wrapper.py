@@ -1,4 +1,5 @@
 from django.apps import apps as django_apps
+from django.urls.base import reverse
 from urllib import parse
 
 from ..parsers import NextUrlParser, Keywords
@@ -107,6 +108,15 @@ class ModelWrapper:
         self.object.save = None
         self.add_extra_attributes_after()
 
+        # reverse the next_url_name
+        if self.next_url_name:
+            self.reverse = reverse(self.next_url_name, kwargs=keywords)
+        else:
+            self.reverse = None
+
+        # reverse admin url (must be registered w/ the site admin)
+        self.href = f'{self.get_absolute_url()}?next={self.next_url}&{self.querystring}'
+
     def add_extra_attributes_after(self, **kwargs):
         """Called after the model is wrapped."""
         pass
@@ -120,12 +130,6 @@ class ModelWrapper:
     @property
     def _meta(self):
         return self.object._meta
-
-    @property
-    def href(self):
-        """Returns the admin url with next url and FK data in the querystring.
-        """
-        return f'{self.get_absolute_url()}?next={self.next_url}&{self.querystring}'
 
     def _get_model_cls_or_raise(self, model_obj, model=None):
         """Returns the given model, as a class, or raises an exception.
