@@ -1,4 +1,3 @@
-from django.core.exceptions import ObjectDoesNotExist
 from django.db.models.fields.related import ManyToManyField, ForeignKey, OneToOneField
 from django.db.models.fields.reverse_related import ForeignObjectRel
 

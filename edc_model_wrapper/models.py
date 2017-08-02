@@ -1,4 +1,4 @@
 from django.conf import settings
 
 if settings.APP_NAME == 'edc_model_wrapper':
-    from .tests.models import *
+    from .tests import models

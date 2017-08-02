@@ -1,9 +1,9 @@
 from django.apps import apps as django_apps
+from django.urls.exceptions import NoReverseMatch
 from urllib import parse
 
 from ..parsers import NextUrlParser, Keywords
 from .fields import Fields
-from django.urls.exceptions import NoReverseMatch
 
 
 class ModelWrapperError(Exception):
