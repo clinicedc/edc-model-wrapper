@@ -5,8 +5,7 @@ Wrap a model instance with a custom wrapper to add methods needed for Edc Dashbo
 
     class ExampleModelWrapper(ModelWrapper):
         model = 'edc_model_wrapper.example'
-        url_namespace = 'edc-model-wrapper'
-        next_url_name = 'listboard_url'
+        next_url_name = 'edc-model-wrapper:listboard_url'
         next_url_attrs = ['f1']
         querystring_attrs = ['f2', 'f3']
     
@@ -21,15 +20,21 @@ Instantiate with a model instance, persisted or not:
     model_obj = Example(f1=1, f2=2, f3=3) 
     wrapper = ExampleExampleModelWrapper(model_obj=model_obj)
     
-Get the "next" url for model objects in a Listboard, Dabsboard, etc,
+Get the "admin" url with "next" for model objects in a Listboard, Dabsboard, etc,
 
     >>> wrapper.href
     '/admin/edc_model_wrapper/example/add/?next=edc-model-wrapper:listboard_url,f1&f1=1&f2=2&f3=3'
 
-Get the admin url
+Get the admin url without the "next" querystring data:
 
     >>> wrapper.admin_url_name
     '/admin/edc_model_wrapper/example/add/'
+
+Reverse the next_url:
+
+    >>> wrapper.reverse()
+    '/listboard/1/'
+
 
 Model is a class regardless of how it was declared:
 
@@ -65,23 +70,5 @@ The original object is accessible, if needed:
     
     >>> wrapper.object.report_datetime
     datetime.datetime(2017, 6, 1, 15, 4, 55, 594512)
-        
- 
-## Options
-
-Declare with a model class instead of label_lower:
-
-    from edc_model_wrapper.models import Example
-    
-    class ExampleModelWrapper(ModelWrapper):
-        model = Example
-        url_namespace = 'edc-model-wrapper'
-        next_url_name = 'listboard_url'
-        next_url_attrs = ['f1']
-        querystring_attrs = ['f2', 'f3']
-
-
-## Log Entry Models
-
 
     
