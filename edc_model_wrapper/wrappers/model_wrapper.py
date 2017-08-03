@@ -126,14 +126,15 @@ class ModelWrapper:
         # reverse admin url (must be registered w/ the site admin)
         self.href = f'{self.get_absolute_url()}?next={self.next_url}&{self.querystring}'
 
-    def reverse(self):
+    def reverse(self, model_wrapper=None):
         """Returns the reversed next_url_name or None.
         """
         try:
-            next_url = self.next_url_parser.reverse(model_wrapper=self)
+            next_url = self.next_url_parser.reverse(
+                model_wrapper=model_wrapper or self)
         except NoReverseMatch as e:
             raise ModelWrapperNoReverseMatch(
-                f'next_url_name={self.next_url_name}. Got {e}')
+                f'next_url_name={self.next_url_name}. Got {e} {repr(self)}')
         return next_url
 
     def add_extra_attributes_after(self, **kwargs):

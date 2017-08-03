@@ -132,8 +132,8 @@ class ModelWithLogWrapper:
     def href(self):
         return self.wrapped_object.href
 
-    def reverse(self):
-        return self.wrapped_object.reverse()
+    def reverse(self, model_wrapper=None):
+        return self.wrapped_object.reverse(model_wrapper=model_wrapper or self)
 
     @property
     def next_url(self):
