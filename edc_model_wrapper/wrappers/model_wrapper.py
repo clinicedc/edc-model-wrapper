@@ -94,8 +94,9 @@ class ModelWrapper:
                 pass
 
         # wrap me with next url and it's required attrs
-        self.next_url = self.next_url_parser.querystring(
+        querystring = self.next_url_parser.querystring(
             objects=[self, self.object], **kwargs)
+        self.next_url = f'{self.next_url_name}{querystring}'
 
         # wrap me with admin urls
         self.get_absolute_url = self.object.get_absolute_url
