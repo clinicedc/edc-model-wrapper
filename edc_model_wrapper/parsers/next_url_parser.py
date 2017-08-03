@@ -40,12 +40,12 @@ class NextUrlParser:
         self.url_args = url_args
 
     def querystring(self, objects=None, **kwargs):
-        """Returns a querystring with "next" or ''.
+        """Returns a querystring including "next_args" or ''.
 
             objects: a list of objects to from which to get attr values.
         """
         if self.url_args:
-            next_args = ',{}'.format(','.join(self.url_args))
+            next_args = '{}'.format(','.join(self.url_args))
             url_kwargs = {
                 k: v for k, v in kwargs.items() if k in (self.url_args or [])}
             keywords = self.keywords_cls(

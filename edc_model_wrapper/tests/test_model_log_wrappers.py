@@ -216,10 +216,10 @@ class TestModelWithLogWrapperUrls(TestCase):
         wrapper = ModelWithLogWrapper(
             model_obj=example,
             next_url_attrs=['example_identifier', 'example_log'],
-            next_url_name='listboard_url')
+            next_url_name='edc-model-wrapper:listboard_url')
         self.assertIsNotNone(wrapper.next_url)
         self.assertTrue(wrapper.next_url != '')
         self.assertEqual(
             wrapper.next_url,
-            f'listboard_url,example_identifier,example_log'
+            f'edc-model-wrapper:listboard_url,example_identifier,example_log'
             f'&example_identifier={example_identifier}&example_log={str(example_log.id)}')

@@ -72,10 +72,16 @@ class ModelWrapper:
         fields_obj = self.fields_cls(model_obj=self.object)
         self.fields = fields_obj.get_field_values_as_strings
 
-        self.querystring_attrs = querystring_attrs or self.querystring_attrs
+        if next_url_name:
+            self.next_url_name = next_url_name
+        if next_url_attrs:
+            self.next_url_attrs = next_url_attrs
+        if querystring_attrs:
+            self.querystring_attrs = querystring_attrs
+
         self.next_url_parser = self.next_url_parser_cls(
-            url_name=next_url_name or self.next_url_name,
-            url_args=next_url_attrs or self.next_url_attrs)
+            url_name=self.next_url_name,
+            url_args=self.next_url_attrs)
 
         # wrap me with kwargs
         for attr, value in kwargs.items():
@@ -96,7 +102,10 @@ class ModelWrapper:
         # wrap me with next url and it's required attrs
         querystring = self.next_url_parser.querystring(
             objects=[self, self.object], **kwargs)
-        self.next_url = f'{self.next_url_name}{querystring}'
+        if querystring:
+            self.next_url = f'{self.next_url_name},{querystring}'
+        else:
+            self.next_url = self.next_url_name
 
         # wrap me with admin urls
         self.get_absolute_url = self.object.get_absolute_url

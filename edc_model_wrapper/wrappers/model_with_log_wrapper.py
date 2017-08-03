@@ -3,6 +3,7 @@ from django.utils.text import camel_case_to_spaces
 from .fields import Fields
 from .model_relation import LogModelRelation
 from .model_wrapper import ModelWrapper
+from pprint import pprint
 
 
 class ModelWithLogWrapperError(Exception):
@@ -35,13 +36,12 @@ class ModelWithLogWrapper:
     querystring_attrs = []
 
     # attrs for all three wrappers
-    url_namespace = None
     next_url_name = None
     next_url_attrs = []
 
     def __init__(self, model_obj=None, model=None, next_url_name=None, related_lookup=None,
                  log_model_name=None, log_entry_model_name=None, querystring_attrs=None,
-                 next_url_attrs=None, url_namespace=None, ordering=None, **kwargs):
+                 next_url_attrs=None, ordering=None, **kwargs):
         self.object = model_obj
         self.model = model or model_obj.__class__
         self.model_name = model_obj._meta.object_name.lower().replace(' ', '_')
@@ -49,7 +49,6 @@ class ModelWithLogWrapper:
         self.wrapper_options = dict(
             next_url_attrs=next_url_attrs or self.next_url_attrs,
             next_url_name=next_url_name or self.next_url_name,
-            url_namespace=url_namespace or self.url_namespace,
             **kwargs)
 
         self.object_model = model_obj.__class__
@@ -132,3 +131,10 @@ class ModelWithLogWrapper:
     @property
     def href(self):
         return self.wrapped_object.href
+
+    def reverse(self):
+        return self.wrapped_object.reverse()
+
+    @property
+    def next_url(self):
+        return self.wrapped_object.next_url
