@@ -1,4 +1,5 @@
 from django.apps import apps as django_apps
+from django.urls.exceptions import NoReverseMatch
 from urllib import parse
 
 from ..parsers import NextUrlParser, Keywords
@@ -18,6 +19,10 @@ class ModelWrapperObjectAlreadyWrapped(Exception):
 
 
 class ModelWrapperInvalidProperty(Exception):
+    pass
+
+
+class ModelWrapperNoReverseMatch(Exception):
     pass
 
 
@@ -52,14 +57,12 @@ class ModelWrapper:
     next_url_parser_cls = NextUrlParser
 
     model = None  # class or label_lower
-    url_namespace = None
-    next_url_name = None
+    next_url_name = None  # should include namespace:url_name
     next_url_attrs = []
     querystring_attrs = []
 
     def __init__(self, model_obj=None, model=None, next_url_name=None,
-                 next_url_attrs=None, querystring_attrs=None,
-                 url_namespace=None, **kwargs):
+                 next_url_attrs=None, querystring_attrs=None, **kwargs):
 
         self.object = model_obj
         self.model_name = model_obj._meta.object_name.lower().replace(' ', '_')
@@ -69,12 +72,16 @@ class ModelWrapper:
         fields_obj = self.fields_cls(model_obj=self.object)
         self.fields = fields_obj.get_field_values_as_strings
 
-        self.querystring_attrs = querystring_attrs or self.querystring_attrs
+        if next_url_name:
+            self.next_url_name = next_url_name
+        if next_url_attrs:
+            self.next_url_attrs = next_url_attrs
+        if querystring_attrs:
+            self.querystring_attrs = querystring_attrs
+
         self.next_url_parser = self.next_url_parser_cls(
-            url_name=next_url_name or self.next_url_name,
-            url_args=next_url_attrs or self.next_url_attrs,
-            url_namespace=url_namespace or self.url_namespace,
-            ** kwargs)
+            url_name=self.next_url_name,
+            url_args=self.next_url_attrs)
 
         # wrap me with kwargs
         for attr, value in kwargs.items():
@@ -86,26 +93,49 @@ class ModelWrapper:
 
         # wrap me with field attrs
         for name, value in self.fields(wrapper=self):
-            setattr(self, name, value)
+            try:
+                setattr(self, name, value)
+            except AttributeError:
+                # skip if attr cannot be overwritten
+                pass
 
         # wrap me with next url and it's required attrs
-        self.next_url = self.next_url_parser.querystring(
+        querystring = self.next_url_parser.querystring(
             objects=[self, self.object], **kwargs)
+        if querystring:
+            self.next_url = f'{self.next_url_name},{querystring}'
+        else:
+            self.next_url = self.next_url_name
 
         # wrap me with admin urls
         self.get_absolute_url = self.object.get_absolute_url
-        self.admin_url_name = f'{self.url_namespace}:{self.object.admin_url_name}'
+        # see also UrlMixin.admin_url_name
+        self.admin_url_name = f'{self.object.admin_url_name}'
 
         # wrap with an additional querystring for extra values needed
         # in the view
-        keywords = self.keywords_cls(
+        self.keywords = self.keywords_cls(
             objects=[self], attrs=self.querystring_attrs, **kwargs)
-        self.querystring = parse.urlencode(keywords, encoding='utf-8')
+        self.querystring = parse.urlencode(self.keywords, encoding='utf-8')
 
         # flag as wrapped and disable save
         self.object.wrapped = True
         self.object.save = None
         self.add_extra_attributes_after()
+
+        # reverse admin url (must be registered w/ the site admin)
+        self.href = f'{self.get_absolute_url()}?next={self.next_url}&{self.querystring}'
+
+    def reverse(self, model_wrapper=None):
+        """Returns the reversed next_url_name or None.
+        """
+        try:
+            next_url = self.next_url_parser.reverse(
+                model_wrapper=model_wrapper or self)
+        except NoReverseMatch as e:
+            raise ModelWrapperNoReverseMatch(
+                f'next_url_name={self.next_url_name}. Got {e} {repr(self)}')
+        return next_url
 
     def add_extra_attributes_after(self, **kwargs):
         """Called after the model is wrapped."""
@@ -120,12 +150,6 @@ class ModelWrapper:
     @property
     def _meta(self):
         return self.object._meta
-
-    @property
-    def href(self):
-        """Returns the admin url with next url and FK data in the querystring.
-        """
-        return f'{self.get_absolute_url()}?next={self.next_url}&{self.querystring}'
 
     def _get_model_cls_or_raise(self, model_obj, model=None):
         """Returns the given model, as a class, or raises an exception.

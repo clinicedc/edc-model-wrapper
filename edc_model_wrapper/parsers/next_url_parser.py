@@ -1,4 +1,5 @@
 from urllib import parse
+from django.urls.base import reverse
 
 from .keywords import Keywords
 
@@ -24,33 +25,36 @@ class NextUrlParser:
     value2&arg3=value3&arg4=value4...etc.
 
     * next_url_attrs:
-        A dict with a list of querystring attrs to include in the next url.
+        A list of querystring attrs to include in the next url.
 
         Format is:
-            {key1: [param1, param2, ...], key2: [param1, param2, ...]}
+            [param1, param2, ...]
 
     """
     keywords_cls = Keywords
 
-    def __init__(self, url_name=None, url_args=None, url_namespace=None, **kwargs):
+    def __init__(self, url_name=None, url_args=None):
         if not url_name:
             raise NextUrlError(f'Invalid url_name. Got {url_name}')
-        self.url_name = url_name
+        self.url_name = url_name  # may include url_namespace
         self.url_args = url_args
-        self.url_namespace = url_namespace
 
     def querystring(self, objects=None, **kwargs):
-        """Returns a querystring or ''.
+        """Returns a querystring including "next_args" or ''.
 
             objects: a list of objects to from which to get attr values.
         """
         if self.url_args:
-            url_namespace = f'{self.url_namespace}:' if self.url_namespace else ''
-            next_args = ',{}'.format(','.join(self.url_args))
+            next_args = '{}'.format(','.join(self.url_args))
             url_kwargs = {
                 k: v for k, v in kwargs.items() if k in (self.url_args or [])}
             keywords = self.keywords_cls(
                 objects=objects, attrs=self.url_args, include_attrs=self.url_args, **url_kwargs)
             querystring = parse.urlencode(keywords, encoding='utf-8')
-            return f'{url_namespace}{self.url_name}{next_args}&{querystring}'
+            return f'{next_args}&{querystring}'
         return ''
+
+    def reverse(self, model_wrapper=None):
+        keywords = self.keywords_cls(
+            objects=[model_wrapper], attrs=self.url_args)
+        return reverse(f'{self.url_name}', kwargs=keywords)

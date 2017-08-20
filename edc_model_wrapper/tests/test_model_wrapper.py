@@ -21,7 +21,6 @@ class SubjectVisitAdmin(admin.ModelAdmin):
     pass
 
 
-@tag('model_wrapper')
 class TestModelWrapper(TestCase):
 
     def test_model_wrapper(self):
@@ -143,8 +142,7 @@ class TestExampleWrappers(TestCase):
 
         class ExampleModelWrapper(ModelWrapper):
             model = 'edc_model_wrapper.example'
-            url_namespace = 'edc-model-wrapper'
-            next_url_name = 'listboard_url'
+            next_url_name = 'edc-model-wrapper:listboard_url'
             next_url_attrs = ['f1']
             querystring_attrs = ['f2', 'f3']
         self.wrapper_cls = ExampleModelWrapper
@@ -186,14 +184,16 @@ class TestExampleWrappers(TestCase):
         model_obj = Example(f1=1, f2=2, f3=3)
         wrapper = self.wrapper_cls(model_obj=model_obj)
         self.assertEqual(
-            wrapper.admin_url_name, 'edc-model-wrapper:admin:edc_model_wrapper_example_add')
+            wrapper.admin_url_name,
+            'edc_model_wrapper_admin:edc_model_wrapper_example_add')
 
     def test_model_wrapper_admin_urls_change(self):
         model_obj = Example(f1=1, f2=2, f3=3)
         model_obj.save()
         wrapper = self.wrapper_cls(model_obj=model_obj)
         self.assertEqual(
-            wrapper.admin_url_name, 'edc-model-wrapper:admin:edc_model_wrapper_example_change')
+            wrapper.admin_url_name,
+            'edc_model_wrapper_admin:edc_model_wrapper_example_change')
 
     def test_model_wrapper_fields(self):
         model_obj = Example(f1=1, f2=2, f3=3)
@@ -220,15 +220,13 @@ class TestExampleWrappers2(TestCase):
 
         class SubjectVisitModelWrapper1(ModelWrapper):
             model = 'edc_model_wrapper.subjectvisit'
-            url_namespace = 'edc-model-wrapper'
-            next_url_name = 'listboard_url'
+            next_url_name = 'edc-model-wrapper:listboard_url'
             next_url_attrs = ['v1']
             # querystring_attrs = ['f2', 'f3']
 
         class SubjectVisitModelWrapper2(ModelWrapper):
             model = 'edc_model_wrapper.subjectvisit'
-            url_namespace = 'edc-model-wrapper'
-            next_url_name = 'listboard_url'
+            next_url_name = 'edc-model-wrapper:listboard_url'
             next_url_attrs = ['v1', 'appointment']
             # querystring_attrs = ['f2', 'f3']
 
@@ -238,8 +236,7 @@ class TestExampleWrappers2(TestCase):
 
         class AppointmentModelWrapper1(ModelWrapper):
             model = 'edc_model_wrapper.appointment'
-            url_namespace = 'edc-model-wrapper'
-            next_url_name = 'listboard_url'
+            next_url_name = 'edc-model-wrapper:listboard_url'
             next_url_attrs = ['a1']
             # querystring_attrs = ['f2', 'f3']
 
@@ -254,8 +251,7 @@ class TestExampleWrappers2(TestCase):
 
         class AppointmentModelWrapper2(ModelWrapper):
             model = 'edc_model_wrapper.appointment'
-            url_namespace = 'edc-model-wrapper'
-            next_url_name = 'listboard_url'
+            next_url_name = 'edc-model-wrapper:listboard_url'
             next_url_attrs = ['a1']
             # querystring_attrs = ['f2', 'f3']
 

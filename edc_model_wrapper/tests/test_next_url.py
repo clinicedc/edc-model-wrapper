@@ -1,18 +1,29 @@
 from django.test import TestCase, tag
 
 from ..parsers import NextUrlParser, NextUrlError
-from .test_keywords import DummyObj
 
 
-@tag('url')
+class DummyObj:
+    def __init__(self, **kwargs):
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+
+
 class TestNextUrlParser(TestCase):
 
     def test_url_parser(self):
-        obj1 = DummyObj(a=1, b=2)
-        obj2 = DummyObj(c=1, d=2)
-        parser = NextUrlParser(url_name='example', url_args=['a', 'b'])
+        obj1 = DummyObj(f1=1, f2=2)
+        obj2 = DummyObj(f3=1, f4=2)
+        parser = NextUrlParser(
+            url_name='edc-model-wrapper:listboard_url', url_args=['f1', 'f2'])
         self.assertEqual(parser.querystring(
-            objects=[obj2, obj1]), 'example,a,b&a=1&b=2')
+            objects=[obj2, obj1]), 'f1,f2&f1=1&f2=2')
 
     def test_url_parser_no_name_raises(self):
         self.assertRaises(NextUrlError, NextUrlParser)
+
+    def test_url_parser_reverse(self):
+        obj1 = DummyObj(f2=1, f3=2)
+        parser = NextUrlParser(
+            url_name='edc-model-wrapper:listboard_url', url_args=['f2', 'f3'])
+        parser.reverse(model_wrapper=obj1)
