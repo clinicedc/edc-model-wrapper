@@ -3,6 +3,8 @@ from django.apps import apps as django_apps
 
 class ModelWrapperTestHelper:
 
+    dashboard_url = '/dashboard/'
+
     def __init__(self, model_wrapper=None, app_label=None, **kwargs):
         self.model_wrapper = model_wrapper
         self.model_wrapper.model = f'{app_label}.{model_wrapper.model.split(".")[1]}'
@@ -26,7 +28,7 @@ class ModelWrapperTestHelper:
         testcase.assertIn('change', wrapper.href)
 
         # reverse
-        testcase.assertIn('/dashboard/', wrapper.reverse())
+        testcase.assertIn(self.dashboard_url, wrapper.reverse())
 
         # next_url
         wrapper = self.model_wrapper(model_obj=self.model_obj)
