@@ -19,10 +19,5 @@ class LogModelRelation(ModelRelation):
         else:
             model_name = model_obj._meta.object_name.lower()
 
-        if not log_model_name:
-            log_model_name = f'{model_name}_log'
-        if not log_entry_model_name:
-            log_entry_model_name = f'{model_name}_log_entry'
-
         schema = [model_name, log_model_name, log_entry_model_name]
         super().__init__(model_obj=model_obj, schema=schema, **kwargs)

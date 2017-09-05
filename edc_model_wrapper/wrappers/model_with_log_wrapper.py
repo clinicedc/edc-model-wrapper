@@ -26,7 +26,8 @@ class ModelWithLogWrapper:
     log_model_wrapper_cls = ModelWrapper  # wrap example_log
     log_entry_model_wrapper_cls = ModelWrapper  # wrap example_log_entry
 
-    related_lookup = None  # need if model_obj is not directly related to example_log
+    # need if model_obj is not directly related to example_log
+    related_lookup = None
     log_model_name = None
     log_entry_model_name = None
 
@@ -43,7 +44,13 @@ class ModelWithLogWrapper:
                  next_url_attrs=None, ordering=None, **kwargs):
         self.object = model_obj
         self.model = model or model_obj.__class__
-        self.model_name = model_obj._meta.object_name.lower().replace(' ', '_')
+        self.model_name = model_obj._meta.object_name.lower().replace(
+            ' ', '_')
+        if not self.log_model_name:
+            self.log_model_name = f'{self.model_name}_log'
+
+        if not log_entry_model_name:
+            self.log_entry_model_name = f'{self.model_name}_log_entry'
 
         self.wrapper_options = dict(
             next_url_attrs=next_url_attrs or self.next_url_attrs,
@@ -88,7 +95,7 @@ class ModelWithLogWrapper:
         self.log_entry = self.log_entry_model_wrapper_cls(
             model_obj=relation.log_entry,
             model=self.log_entry_model,
-            querystring_attrs=[f'{self.model_name}_log'],
+            querystring_attrs=[f'{self.log_model_name}'],
             **{log_attrname: str(relation.log.id)},
             **self.wrapper_options)
 
@@ -99,7 +106,7 @@ class ModelWithLogWrapper:
             wrapped = self.log_entry_model_wrapper_cls(
                 model_obj=log_entry,
                 model=self.log_entry_model,
-                querystring_attrs=[f'{self.model_name}_log'],
+                querystring_attrs=[f'{self.log_model_name}'],
                 **{log_attrname: str(relation.log.id)},
                 **self.wrapper_options)
             self.log_entries.append(wrapped)
