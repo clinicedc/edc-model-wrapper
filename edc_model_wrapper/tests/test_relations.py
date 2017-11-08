@@ -4,7 +4,6 @@ from ..wrappers import ModelRelation, LogModelRelation
 from .models import Example, ExampleLog, ExampleLogEntry, ParentExample, SuperParentExample
 
 
-@tag('rel')
 class TestModelRelations(TestCase):
 
     def setUp(self):
@@ -28,7 +27,6 @@ class TestModelRelations(TestCase):
         self.assertIsInstance(model_relations.log_entry, ExampleLogEntry)
 
 
-@tag('rel')
 class TestLogModelRelations(TestCase):
 
     def setUp(self):

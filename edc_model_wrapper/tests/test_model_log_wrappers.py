@@ -1,6 +1,5 @@
 from datetime import timedelta
 from django.test import TestCase, tag
-
 from edc_base.utils import get_utcnow
 
 from ..wrappers import ModelWrapper, ModelWithLogWrapper
@@ -223,15 +222,3 @@ class TestModelWithLogWrapperUrls(TestCase):
             wrapper.next_url,
             f'edc-model-wrapper:listboard_url,example_identifier,example_log'
             f'&example_identifier={example_identifier}&example_log={str(example_log.id)}')
-
-#     def test_wrapper_reverse(self):
-#         example_identifier = '111111111'
-#         example = Example.objects.create(example_identifier=example_identifier)
-#         example_log = ExampleLog.objects.create(example=example)
-#         ExampleLogEntry.objects.create(
-#             example_log=example_log)
-#         wrapper = ModelWithLogWrapper(
-#             model_obj=example,
-#             next_url_attrs=['example_identifier', 'example_log'],
-#             next_url_name='edc-model-wrapper:listboard_url')
-#         wrapper.reverse()

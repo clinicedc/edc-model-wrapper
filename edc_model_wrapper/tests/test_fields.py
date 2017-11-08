@@ -4,7 +4,6 @@ from ..wrappers import Fields, ModelWrapper
 from .models import Example, ParentExample
 
 
-@tag('fields')
 class TestFields(TestCase):
 
     def test_fields(self):
