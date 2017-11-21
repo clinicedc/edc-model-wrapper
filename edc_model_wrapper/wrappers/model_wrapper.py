@@ -66,6 +66,7 @@ class ModelWrapper:
                  next_url_attrs=None, querystring_attrs=None, **kwargs):
 
         self.object = model_obj
+        self._raise_if_model_obj_is_wrapped()
         self.model_cls = model_cls or self.model_cls or self.object.__class__
         self.model_name = self.model_cls._meta.object_name.lower().replace(' ', '_')
         self.model = model or self.model or self.model_cls._meta.label_lower
@@ -75,8 +76,6 @@ class ModelWrapper:
         if self.model != self.model_cls._meta.label_lower:
             raise ModelWrapperModelError(
                 f'Wrapper is for model {self.model}. Got model_obj={repr(self.object)}')
-
-        self._raise_if_model_obj_is_wrapped()
 
         fields_obj = self.fields_cls(model_obj=self.object)
         self.fields = fields_obj.get_field_values_as_strings
@@ -192,4 +191,4 @@ class ModelWrapper:
             pass
         except AssertionError:
             raise ModelWrapperObjectAlreadyWrapped(
-                f'Model is already wrapped. Got {self.object}')
+                f'Model instance is already wrapped. Got wrapped={self.object.wrapped}. See {repr(self)}')
