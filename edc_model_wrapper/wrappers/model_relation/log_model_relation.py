@@ -18,6 +18,7 @@ class LogModelRelation(ModelRelation):
             model_obj = related_obj
         else:
             model_name = model_obj._meta.object_name.lower()
-
-        schema = [model_name, log_model_name, log_entry_model_name]
+        self.log_model_name = log_model_name or f'{model_name}_log'
+        self.log_entry_model_name = log_entry_model_name or f'{model_name}_log_entry'
+        schema = [model_name, self.log_model_name, self.log_entry_model_name]
         super().__init__(model_obj=model_obj, schema=schema, **kwargs)

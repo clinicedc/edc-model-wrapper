@@ -5,9 +5,9 @@ class ModelWrapperTestHelper:
 
     dashboard_url = '/dashboard/'
 
-    def __init__(self, model_wrapper=None, app_label=None, **kwargs):
+    def __init__(self, model_wrapper=None, **kwargs):
         self.model_wrapper = model_wrapper
-        self.model_wrapper.model = f'{app_label}.{model_wrapper.model.split(".")[1]}'
+        self.model_wrapper.model = model_wrapper.model_cls._meta.label_lower
         self.model_wrapper.next_url_name = (
             model_wrapper.next_url_name.split(':')[1])
         self.options = kwargs
@@ -17,7 +17,7 @@ class ModelWrapperTestHelper:
     def test(self, testcase):
         # add admin url
         wrapper = self.model_wrapper(model_obj=self.model())
-        testcase.assertIsNotNone(wrapper.href)
+        testcase.assertIsNotNone(wrapper.href, msg='href')
 
         # add admin url
         wrapper = self.model_wrapper(model_obj=self.model())
@@ -32,10 +32,10 @@ class ModelWrapperTestHelper:
 
         # next_url
         wrapper = self.model_wrapper(model_obj=self.model_obj)
-        testcase.assertIsNotNone(wrapper.next_url)
+        testcase.assertIsNotNone(wrapper.next_url, msg='next_url')
 
         # querystring
         wrapper = self.model_wrapper(model_obj=self.model_obj)
         for item in wrapper.querystring_attrs:
             testcase.assertIn(item, wrapper.querystring)
-            testcase.assertIsNotNone(getattr(wrapper, item))
+            testcase.assertIsNotNone(getattr(wrapper, item), msg=item)

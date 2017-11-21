@@ -56,18 +56,27 @@ class ModelWrapper:
     keywords_cls = Keywords
     next_url_parser_cls = NextUrlParser
 
-    model = None  # class or label_lower
+    model = None  # label_lower
+    model_cls = None
     next_url_name = None  # should include namespace:url_name
     next_url_attrs = []
     querystring_attrs = []
 
-    def __init__(self, model_obj=None, model=None, next_url_name=None,
+    def __init__(self, model_obj=None, model=None, model_cls=None, next_url_name=None,
                  next_url_attrs=None, querystring_attrs=None, **kwargs):
 
         self.object = model_obj
-        self.model_name = model_obj._meta.object_name.lower().replace(' ', '_')
-        self.model = self.model or self._get_model_cls_or_raise(
-            model_obj, model)
+        self.model_cls = model_cls or self.model_cls or self.object.__class__
+        self.model_name = self.model_cls._meta.object_name.lower().replace(' ', '_')
+        self.model = model or self.model or self.model_cls._meta.label_lower
+        if not isinstance(self.object, self.model_cls):
+            raise ModelWrapperModelError(
+                f'Expected an instance of {self.model}. Got model_obj={repr(self.object)}')
+        if self.model != self.model_cls._meta.label_lower:
+            raise ModelWrapperModelError(
+                f'Wrapper is for model {self.model}. Got model_obj={repr(self.object)}')
+
+        self._raise_if_model_obj_is_wrapped()
 
         fields_obj = self.fields_cls(model_obj=self.object)
         self.fields = fields_obj.get_field_values_as_strings
@@ -138,7 +147,8 @@ class ModelWrapper:
         return next_url
 
     def add_extra_attributes_after(self, **kwargs):
-        """Called after the model is wrapped."""
+        """Called after the model is wrapped.
+        """
         pass
 
     def __repr__(self):
@@ -151,30 +161,35 @@ class ModelWrapper:
     def _meta(self):
         return self.object._meta
 
-    def _get_model_cls_or_raise(self, model_obj, model=None):
-        """Returns the given model, as a class, or raises an exception.
+#     @property
+#     def model_cls(self):
+#         """Returns the wrapper's model class.
+#
+#         Validates that the model instance (model_obj) is an instance
+#         of model.
+#         """
+#         if not self._model_cls:
+#             if not self.model:
+#                 model_cls = self.object.__class__
+#             else:
+#                 try:
+#                     model_cls = django_apps.get_model(self.model)
+#                 except LookupError as e:
+#                     raise ModelWrapperModelError(
+#                         f'{e}. Got model={self.model}.')
+#                 if not isinstance(self.object, model_cls):
+#                     raise ModelWrapperModelError(
+#                         f'Expected an instance of {self.model}. Got model_obj={self.object}')
+#             self._model_cls = model_cls
+#         return self._model_cls
 
-        Validates that the model instance (model_obj) is an instance
-        of model and the model instance is not a wrapped model instance.
+    def _raise_if_model_obj_is_wrapped(self):
+        """Raises if the model instance is already wrapped.
         """
-        if not model:
-            model_cls = model_obj.__class__
-        else:
-            try:
-                model_cls = django_apps.get_model(*model.split('.'))
-            except AttributeError:
-                model_cls = model
-            except ValueError as e:
-                raise ModelWrapperModelError(f'{e}. Got model={model}.')
-            if not isinstance(model_obj, model_cls):
-                raise ModelWrapperModelError(
-                    f'Expected an instance of {model}. Got model_obj={model_obj}')
-        # assert model obj can only be wrapped once.
         try:
-            assert not model_obj.wrapped
+            assert not self.object.wrapped
         except AttributeError:
             pass
         except AssertionError:
             raise ModelWrapperObjectAlreadyWrapped(
-                f'Model is already wrapped. Got {model_obj}')
-        return model_cls
+                f'Model is already wrapped. Got {self.object}')

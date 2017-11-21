@@ -210,8 +210,7 @@ class TestModelWithLogWrapperUrls(TestCase):
         example_identifier = '111111111'
         example = Example.objects.create(example_identifier=example_identifier)
         example_log = ExampleLog.objects.create(example=example)
-        ExampleLogEntry.objects.create(
-            example_log=example_log)
+        ExampleLogEntry.objects.create(example_log=example_log)
         wrapper = ModelWithLogWrapper(
             model_obj=example,
             next_url_attrs=['example_identifier', 'example_log'],
