@@ -6,8 +6,10 @@ class ModelWrapperTestHelper:
 
     dashboard_url = '/dashboard/'
 
-    def __init__(self, model_wrapper=None, app_label=None, model=None, **kwargs):
+    def __init__(self, model_wrapper=None, app_label=None, model=None,
+                 dashboard_url=None, **kwargs):
         self.model_wrapper = model_wrapper
+        self.dashboard_url = dashboard_url or self.dashboard_url
         if app_label:
             model = self.model_wrapper.model or model
             self.model_wrapper.model = f'{app_label}.{model.split(".")[1]}'

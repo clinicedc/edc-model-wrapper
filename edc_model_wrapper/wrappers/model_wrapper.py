@@ -1,4 +1,3 @@
-from django.apps import apps as django_apps
 from django.urls.exceptions import NoReverseMatch
 from urllib import parse
 
@@ -82,6 +81,9 @@ class ModelWrapper:
 
         if next_url_name:
             self.next_url_name = next_url_name
+        if not self.next_url_name:
+            raise ModelWrapperError(
+                f'Missing next_url_name. See {repr(self)}.')
         if next_url_attrs:
             self.next_url_attrs = next_url_attrs
         if querystring_attrs:
