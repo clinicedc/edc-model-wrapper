@@ -28,7 +28,7 @@ class TestModelWrapper(TestCase):
         """
         obj = Example()
         ModelWrapper(
-            model_obj=obj, model=Example,
+            model_obj=obj, model_cls=Example,
             next_url_name='thenexturl')
 
     def test_model_wrapper_assumes_model_cls(self):
@@ -37,9 +37,27 @@ class TestModelWrapper(TestCase):
         obj = Example()
         wrapper = ModelWrapper(
             model_obj=obj, next_url_name='thenexturl')
-        self.assertEqual(wrapper.model, Example)
+        self.assertEqual(wrapper.model_cls, Example)
 
     def test_model_wrapper_raises_on_wrong_model_cls(self):
+        """Asserts can construct.
+        """
+        obj = Example()
+        self.assertRaises(
+            ModelWrapperModelError,
+            ModelWrapper,
+            model_obj=obj, model_cls=ParentExample, next_url_name='thenexturl')
+
+    def test_model_wrapper_raises_on_wrong_model_cls2(self):
+        """Asserts can construct.
+        """
+        obj = Example()
+        self.assertRaises(
+            ModelWrapperModelError,
+            ModelWrapper,
+            model_obj=obj, model_cls=ParentExample, next_url_name='thenexturl')
+
+    def test_model_wrapper_raises_on_wrong_model_not_string(self):
         """Asserts can construct.
         """
         obj = Example()
@@ -61,7 +79,7 @@ class TestModelWrapper(TestCase):
         """
         obj = Example()
         wrapper = ModelWrapper(
-            model_obj=obj, model=Example,
+            model_obj=obj, model_cls=Example,
             next_url_name='thenexturl')
         self.assertIsNone(wrapper.object.id)
         self.assertFalse(bool(wrapper))
@@ -73,7 +91,7 @@ class TestModelWrapper(TestCase):
         """
         obj = Example.objects.create()
         wrapper = ModelWrapper(
-            model_obj=obj, model=Example,
+            model_obj=obj, model_cls=Example,
             next_url_name='thenexturl')
         self.assertTrue(bool(wrapper))
 
@@ -82,7 +100,7 @@ class TestModelWrapper(TestCase):
         """
         obj = Example.objects.create()
         wrapper = ModelWrapper(
-            model_obj=obj, model=Example,
+            model_obj=obj, model_cls=Example,
             next_url_name='thenexturl')
         self.assertEqual(wrapper._meta.label_lower,
                          'edc_model_wrapper.example')
@@ -92,7 +110,7 @@ class TestModelWrapper(TestCase):
         """
         obj = Example.objects.create()
         wrapper = ModelWrapper(
-            model_obj=obj, model=Example,
+            model_obj=obj, model_cls=Example,
             next_url_name='thenexturl')
         self.assertTrue(repr(wrapper))
 
@@ -101,12 +119,12 @@ class TestModelWrapper(TestCase):
         """
         obj = Example()
         wrapper = ModelWrapper(
-            model_obj=obj, model=Example,
+            model_obj=obj, model_cls=Example,
             next_url_name='thenexturl')
         obj = wrapper.object
         self.assertRaises(
             ModelWrapperObjectAlreadyWrapped,
-            ModelWrapper, model_obj=obj, model=Example,
+            ModelWrapper, model_obj=obj, model_cls=Example,
             next_url_name='thenexturl')
 
     def test_model_wrapper_invalid_name_raises(self):
@@ -125,15 +143,17 @@ class TestModelWrapper(TestCase):
         wrapper = ModelWrapper(model_obj=Example(),
                                model='edc_model_wrapper.example',
                                next_url_name='thenexturl')
-        self.assertEqual(wrapper.model, Example)
+        self.assertEqual(wrapper.model_cls, Example)
+        self.assertEqual(wrapper.model, Example._meta.label_lower)
 
     def test_model_wrapper_model_is_class2(self):
         """Asserts model returns as a class if passed class.
         """
         wrapper = ModelWrapper(model_obj=Example(),
-                               model=Example,
+                               model_cls=Example,
                                next_url_name='thenexturl')
-        self.assertEqual(wrapper.model, Example)
+        self.assertEqual(wrapper.model_cls, Example)
+        self.assertEqual(wrapper.model, Example._meta.label_lower)
 
 
 class TestExampleWrappers(TestCase):

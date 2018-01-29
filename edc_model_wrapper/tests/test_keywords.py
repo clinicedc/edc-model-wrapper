@@ -16,7 +16,6 @@ class DummyObj:
         self.id = pk
 
 
-@tag('keywords')
 class TestKeywords(TestCase):
 
     def test_url_parser(self):

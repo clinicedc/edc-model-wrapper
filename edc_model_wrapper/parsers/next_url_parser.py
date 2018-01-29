@@ -35,7 +35,7 @@ class NextUrlParser:
 
     def __init__(self, url_name=None, url_args=None):
         if not url_name:
-            raise NextUrlError(f'Invalid url_name. Got {url_name}')
+            raise NextUrlError(f'Invalid url_name. Got {url_name}.')
         self.url_name = url_name  # may include url_namespace
         self.url_args = url_args
 

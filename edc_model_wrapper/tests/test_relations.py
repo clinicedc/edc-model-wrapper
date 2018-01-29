@@ -4,7 +4,6 @@ from ..wrappers import ModelRelation, LogModelRelation
 from .models import Example, ExampleLog, ExampleLogEntry, ParentExample, SuperParentExample
 
 
-@tag('rel')
 class TestModelRelations(TestCase):
 
     def setUp(self):
@@ -28,7 +27,7 @@ class TestModelRelations(TestCase):
         self.assertIsInstance(model_relations.log_entry, ExampleLogEntry)
 
 
-@tag('rel')
+@tag('1')
 class TestLogModelRelations(TestCase):
 
     def setUp(self):
@@ -43,6 +42,7 @@ class TestLogModelRelations(TestCase):
         self.example_log_entry = ExampleLogEntry.objects.create(
             example_log=self.example_log)
 
+    @tag('2')
     def test_log_model_relations(self):
         model_relations = LogModelRelation(model_obj=self.example)
         self.assertEqual(model_relations.log_model, ExampleLog)
@@ -56,6 +56,7 @@ class TestLogModelRelations(TestCase):
         self.assertEqual(model_relations.log_model, ExampleLog)
         self.assertEqual(model_relations.log_entry_model, ExampleLogEntry)
 
+    @tag('2')
     def test_log_model_relations2(self):
         model_relations = LogModelRelation(
             model_obj=self.parent_example,
@@ -72,6 +73,7 @@ class TestLogModelRelations(TestCase):
         self.assertEqual(model_relations.log_model, ExampleLog)
         self.assertEqual(model_relations.log_entry_model, ExampleLogEntry)
 
+    @tag('2')
     def test_log_model_relations4(self):
         model_relations = LogModelRelation(
             model_obj=self.super_parent_example,

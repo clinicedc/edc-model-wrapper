@@ -1,9 +1,7 @@
-__all__ = ['Example', 'ParentExample',
-           'SuperParentExample', 'UnrelatedExample', 'ExampleLog', 'ExampleLogEntry']
-
 import uuid
 
 from django.db import models
+from django.db.models.deletion import PROTECT
 from edc_base.model_mixins import BaseUuidModel
 from edc_base.utils import get_utcnow
 
@@ -46,7 +44,7 @@ class ParentExample(BaseUuidModel):
 
     f3 = models.CharField(max_length=10, default=uuid.uuid4())
 
-    example = models.ForeignKey(Example, null=True)
+    example = models.ForeignKey(Example, null=True, on_delete=PROTECT)
 
     report_datetime = models.DateTimeField(
         default=get_utcnow)
@@ -60,7 +58,7 @@ class SuperParentExample(BaseUuidModel):
 
     f3 = models.CharField(max_length=10, default=uuid.uuid4())
 
-    parent_example = models.ForeignKey(ParentExample)
+    parent_example = models.ForeignKey(ParentExample, on_delete=PROTECT)
 
     report_datetime = models.DateTimeField(
         default=get_utcnow)
@@ -68,7 +66,7 @@ class SuperParentExample(BaseUuidModel):
 
 class ExampleLog(BaseUuidModel):
 
-    example = models.OneToOneField(Example)
+    example = models.OneToOneField(Example, on_delete=PROTECT)
 
     f1 = models.CharField(max_length=10, unique=True)
 
@@ -78,7 +76,7 @@ class ExampleLog(BaseUuidModel):
 
 class ExampleLogEntry(BaseUuidModel):
 
-    example_log = models.ForeignKey(ExampleLog)
+    example_log = models.ForeignKey(ExampleLog, on_delete=PROTECT)
 
     report_datetime = models.DateTimeField(
         default=get_utcnow)
@@ -97,4 +95,4 @@ class SubjectVisit(BaseUuidModel):
 
     v1 = models.CharField(max_length=10)
 
-    appointment = models.OneToOneField(Appointment)
+    appointment = models.OneToOneField(Appointment, on_delete=PROTECT)
