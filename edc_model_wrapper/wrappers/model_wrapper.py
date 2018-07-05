@@ -155,28 +155,6 @@ class ModelWrapper:
     def _meta(self):
         return self.object._meta
 
-#     @property
-#     def model_cls(self):
-#         """Returns the wrapper's model class.
-#
-#         Validates that the model instance (model_obj) is an instance
-#         of model.
-#         """
-#         if not self._model_cls:
-#             if not self.model:
-#                 model_cls = self.object.__class__
-#             else:
-#                 try:
-#                     model_cls = django_apps.get_model(self.model)
-#                 except LookupError as e:
-#                     raise ModelWrapperModelError(
-#                         f'{e}. Got model={self.model}.')
-#                 if not isinstance(self.object, model_cls):
-#                     raise ModelWrapperModelError(
-#                         f'Expected an instance of {self.model}. Got model_obj={self.object}')
-#             self._model_cls = model_cls
-#         return self._model_cls
-
     def _raise_if_model_obj_is_wrapped(self):
         """Raises if the model instance is already wrapped.
         """
