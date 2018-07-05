@@ -15,7 +15,7 @@ setup(
     author=u'Erik van Widenfelt',
     author_email='ew2789@gmail.com',
     packages=find_packages(),
-    url='http://github.com/botswana-harvard/edc-model-wrapper',
+    url='http://github.com/clinicedc/edc-model-wrapper',
     license='GPL licence, see LICENCE',
     description='model wrapper at add methods for use in EDC dashboard.',
     long_description=README,
