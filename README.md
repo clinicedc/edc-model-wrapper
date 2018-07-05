@@ -1,5 +1,5 @@
 # edc-model-wrapper
-[![Build Status](https://travis-ci.org/botswana-harvard/edc-model-wrapper.svg?branch=develop)](https://travis-ci.org/botswana-harvard/edc-model-wrapper) [![Coverage Status](https://coveralls.io/repos/github/botswana-harvard/edc-model-wrapper/badge.svg?branch=develop)](https://coveralls.io/github/botswana-harvard/edc-model-wrapper?branch=develop)
+[![Build Status](https://travis-ci.org/clinicedc/edc-model-wrapper.svg?branch=develop)](https://travis-ci.org/clinicedc/edc-model-wrapper) [![Coverage Status](https://coveralls.io/repos/github/clinicedc/edc-model-wrapper/badge.svg?branch=develop)](https://coveralls.io/github/clinicedc/edc-model-wrapper?branch=develop)
 
 Wrap a model instance with a custom wrapper to add methods needed for Edc Dashboards and Listboards.
 
@@ -36,13 +36,13 @@ Reverse the next_url:
     '/listboard/1/'
 
 
-Model is a class regardless of how it was declared:
+Attribute `model` is a model class regardless of how it was declared:
 
     >>> assert wrapper.model == Example
     True
 
 
-All field attrs are converted to string and added to the wrapper, except foreignkeys:
+All field attributes are converted to string and added to the wrapper, except foreign keys:
 
     >>> wrapper.f1
     1
