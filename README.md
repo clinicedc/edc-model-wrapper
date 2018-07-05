@@ -1,5 +1,6 @@
-# edc-model-wrapper
 [![Build Status](https://travis-ci.org/clinicedc/edc-model-wrapper.svg?branch=develop)](https://travis-ci.org/clinicedc/edc-model-wrapper) [![Coverage Status](https://coveralls.io/repos/github/clinicedc/edc-model-wrapper/badge.svg?branch=develop)](https://coveralls.io/github/clinicedc/edc-model-wrapper?branch=develop)
+
+# edc-model-wrapper
 
 Wrap a model instance with a custom wrapper to add methods needed for Edc Dashboards and Listboards.
 
