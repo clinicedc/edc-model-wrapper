@@ -1,3 +1,4 @@
+.
 git+https://github.com/clinicedc/edc-base@develop#egg=edc-base
 git+https://github.com/clinicedc/edc-device@develop#egg=edc-device
 git+https://github.com/clinicedc/edc-protocol@develop#egg=edc-protocol
