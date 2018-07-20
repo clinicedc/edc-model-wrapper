@@ -79,35 +79,20 @@ class ModelWrapper:
         fields_obj = self.fields_cls(model_obj=self.object)
         self.fields = fields_obj.get_field_values_as_strings
 
-        if next_url_name:
-            self.next_url_name = next_url_name
+        self.next_url_name = next_url_name or self.next_url_name
         if not self.next_url_name:
             raise ModelWrapperError(
                 f'Missing next_url_name. See {repr(self)}.')
-        if next_url_attrs:
-            self.next_url_attrs = next_url_attrs
-        if querystring_attrs:
-            self.querystring_attrs = querystring_attrs
+
+        self.next_url_attrs = next_url_attrs or self.next_url_attrs
+        self.querystring_attrs = querystring_attrs or self.querystring_attrs
 
         self.next_url_parser = self.next_url_parser_cls(
             url_name=self.next_url_name,
             url_args=self.next_url_attrs)
 
-        # wrap me with kwargs
-        for attr, value in kwargs.items():
-            try:
-                setattr(self, attr, value)
-            except AttributeError:
-                # skip if attr cannot be overwritten
-                pass
-
-        # wrap me with field attrs
-        for name, value in self.fields(wrapper=self):
-            try:
-                setattr(self, name, value)
-            except AttributeError:
-                # skip if attr cannot be overwritten
-                pass
+        self.wrap_me_with(kwargs)
+        self.wrap_me_with({f[0]: f[1] for f in self.fields(wrapper=self)})
 
         # wrap me with next url and it's required attrs
         querystring = self.next_url_parser.querystring(
@@ -136,6 +121,14 @@ class ModelWrapper:
         # reverse admin url (must be registered w/ the site admin)
         self.href = f'{self.get_absolute_url()}?next={self.next_url}&{self.querystring}'
 
+    def wrap_me_with(self, dct):
+        for key, value in dct.items():
+            try:
+                setattr(self, key, value)
+            except AttributeError:
+                # skip if attr cannot be overwritten
+                pass
+
     def reverse(self, model_wrapper=None):
         """Returns the reversed next_url_name or None.
         """
@@ -161,28 +154,6 @@ class ModelWrapper:
     @property
     def _meta(self):
         return self.object._meta
-
-#     @property
-#     def model_cls(self):
-#         """Returns the wrapper's model class.
-#
-#         Validates that the model instance (model_obj) is an instance
-#         of model.
-#         """
-#         if not self._model_cls:
-#             if not self.model:
-#                 model_cls = self.object.__class__
-#             else:
-#                 try:
-#                     model_cls = django_apps.get_model(self.model)
-#                 except LookupError as e:
-#                     raise ModelWrapperModelError(
-#                         f'{e}. Got model={self.model}.')
-#                 if not isinstance(self.object, model_cls):
-#                     raise ModelWrapperModelError(
-#                         f'Expected an instance of {self.model}. Got model_obj={self.object}')
-#             self._model_cls = model_cls
-#         return self._model_cls
 
     def _raise_if_model_obj_is_wrapped(self):
         """Raises if the model instance is already wrapped.
