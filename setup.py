@@ -19,7 +19,7 @@ setup(
     author_email='ew2789@gmail.com',
     packages=find_packages(),
     url='http://github.com/clinicedc/edc-model-wrapper',
-    license='GPL licence, see LICENCE',
+    license='GPL license, see LICENSE',
     description='Model wrappers that add dashboard methods for clinic/edc.',
     long_description=README,
     include_package_data=True,
