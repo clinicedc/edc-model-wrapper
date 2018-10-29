@@ -122,6 +122,12 @@ class ModelWrapper:
         # reverse admin url (must be registered w/ the site admin)
         self.href = f'{self.get_absolute_url()}?next={self.next_url}&{self.querystring}'
 
+    def __repr__(self):
+        return f'{self.__class__.__name__}({self.object} id={self.object.id})'
+
+    def __bool__(self):
+        return True if self.object.id else False
+
     def wrap_me_with(self, dct):
         for key, value in dct.items():
             try:
@@ -145,12 +151,6 @@ class ModelWrapper:
         """Called after the model is wrapped.
         """
         pass
-
-    def __repr__(self):
-        return f'{self.__class__.__name__}({self.object} id={self.object.id})'
-
-    def __bool__(self):
-        return True if self.object.id else False
 
     @property
     def _meta(self):
