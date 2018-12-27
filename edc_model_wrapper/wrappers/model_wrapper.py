@@ -61,8 +61,9 @@ class ModelWrapper:
     next_url_attrs = []
     querystring_attrs = []
 
-    def __init__(self, model_obj=None, model=None, model_cls=None, next_url_name=None,
-                 next_url_attrs=None, querystring_attrs=None, **kwargs):
+    def __init__(self, model_obj=None, model=None, model_cls=None,
+                 next_url_name=None, next_url_attrs=None,
+                 querystring_attrs=None, **kwargs):
 
         self.object = model_obj
         self._raise_if_model_obj_is_wrapped()
@@ -71,10 +72,12 @@ class ModelWrapper:
         self.model = model or self.model or self.model_cls._meta.label_lower
         if not isinstance(self.object, self.model_cls):
             raise ModelWrapperModelError(
-                f'Expected an instance of {self.model}. Got model_obj={repr(self.object)}')
+                f'Expected an instance of {self.model}. '
+                f'Got model_obj={repr(self.object)}')
         if self.model != self.model_cls._meta.label_lower:
             raise ModelWrapperModelError(
-                f'Wrapper is for model {self.model}. Got model_obj={repr(self.object)}. '
+                f'Wrapper is for model {self.model}. '
+                f'Got model_obj={repr(self.object)}. '
                 f'{self.model} != {self.model_cls._meta.label_lower}.')
 
         fields_obj = self.fields_cls(model_obj=self.object)
@@ -105,7 +108,7 @@ class ModelWrapper:
 
         # wrap me with admin urls
         self.get_absolute_url = self.object.get_absolute_url
-        # see also UrlMixin.admin_url_name
+        # see also UrlModelMixin.admin_url_name
         self.admin_url_name = f'{self.object.admin_url_name}'
 
         # wrap with an additional querystring for extra values needed
@@ -120,7 +123,8 @@ class ModelWrapper:
         self.add_extra_attributes_after()
 
         # reverse admin url (must be registered w/ the site admin)
-        self.href = f'{self.get_absolute_url()}?next={self.next_url}&{self.querystring}'
+        self.href = (
+            f'{self.get_absolute_url()}?next={self.next_url}&{self.querystring}')
 
     def __repr__(self):
         return f'{self.__class__.__name__}({self.object} id={self.object.id})'
@@ -165,4 +169,5 @@ class ModelWrapper:
             pass
         except AssertionError:
             raise ModelWrapperObjectAlreadyWrapped(
-                f'Model instance is already wrapped. Got wrapped={self.object.wrapped}. See {repr(self)}')
+                f'Model instance is already wrapped. '
+                f'Got wrapped={self.object.wrapped}. See {repr(self)}')
