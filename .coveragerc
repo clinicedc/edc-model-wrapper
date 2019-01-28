@@ -3,3 +3,5 @@ omit =
     */wsgi.py
     setup.py
     manage.py
+    runtests.py
+    .tox/*
