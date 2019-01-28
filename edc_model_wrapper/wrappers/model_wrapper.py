@@ -91,8 +91,7 @@ class ModelWrapper:
                 f"{self.model} != {self.model_cls._meta.label_lower}."
             )
 
-        fields_obj = self.fields_cls(
-            model_obj=self.object, force_wrap=force_wrap)
+        fields_obj = self.fields_cls(model_obj=self.object)
         self.fields = fields_obj.get_field_values_as_strings
 
         self.next_url_name = next_url_name or self.next_url_name
