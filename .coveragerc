@@ -5,3 +5,4 @@ omit =
     manage.py
     runtests.py
     .tox/*
+    .eggs/*
