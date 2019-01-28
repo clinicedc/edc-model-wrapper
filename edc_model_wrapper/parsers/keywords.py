@@ -29,7 +29,7 @@ class Keywords(OrderedDict):
                         value = str(value.id)
                     except AttributeError:
                         pass
-            self.update({attr: value or ''})
+            self.update({attr: value or ""})
 
     def getattr(self, attr=None, obj=None):
         value = None
@@ -40,7 +40,7 @@ class Keywords(OrderedDict):
         if not value:
             try:
                 # assume reverse rel, remove underscore
-                value = getattr(obj, attr.replace('_', ''))
+                value = getattr(obj, attr.replace("_", ""))
             except AttributeError:
                 pass
         return value

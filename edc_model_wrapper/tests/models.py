@@ -8,8 +8,7 @@ from edc_base.utils import get_utcnow
 
 class Example(BaseUuidModel):
 
-    example_identifier = models.CharField(
-        max_length=10, unique=True)
+    example_identifier = models.CharField(max_length=10, unique=True)
 
     f1 = models.CharField(max_length=10)
 
@@ -17,14 +16,12 @@ class Example(BaseUuidModel):
 
     f3 = models.CharField(max_length=10, default=uuid.uuid4())
 
-    report_datetime = models.DateTimeField(
-        default=get_utcnow)
+    report_datetime = models.DateTimeField(default=get_utcnow)
 
 
 class UnrelatedExample(BaseUuidModel):
 
-    example_identifier = models.CharField(
-        max_length=10, unique=True)
+    example_identifier = models.CharField(max_length=10, unique=True)
 
     f1 = models.CharField(max_length=10)
 
@@ -32,8 +29,7 @@ class UnrelatedExample(BaseUuidModel):
 
     f3 = models.CharField(max_length=10, default=uuid.uuid4())
 
-    report_datetime = models.DateTimeField(
-        default=get_utcnow)
+    report_datetime = models.DateTimeField(default=get_utcnow)
 
 
 class ParentExample(BaseUuidModel):
@@ -46,8 +42,7 @@ class ParentExample(BaseUuidModel):
 
     example = models.ForeignKey(Example, null=True, on_delete=PROTECT)
 
-    report_datetime = models.DateTimeField(
-        default=get_utcnow)
+    report_datetime = models.DateTimeField(default=get_utcnow)
 
 
 class SuperParentExample(BaseUuidModel):
@@ -60,8 +55,7 @@ class SuperParentExample(BaseUuidModel):
 
     parent_example = models.ForeignKey(ParentExample, on_delete=PROTECT)
 
-    report_datetime = models.DateTimeField(
-        default=get_utcnow)
+    report_datetime = models.DateTimeField(default=get_utcnow)
 
 
 class ExampleLog(BaseUuidModel):
@@ -70,16 +64,14 @@ class ExampleLog(BaseUuidModel):
 
     f1 = models.CharField(max_length=10, unique=True)
 
-    report_datetime = models.DateTimeField(
-        default=get_utcnow)
+    report_datetime = models.DateTimeField(default=get_utcnow)
 
 
 class ExampleLogEntry(BaseUuidModel):
 
     example_log = models.ForeignKey(ExampleLog, on_delete=PROTECT)
 
-    report_datetime = models.DateTimeField(
-        default=get_utcnow)
+    report_datetime = models.DateTimeField(default=get_utcnow)
 
 
 class Appointment(BaseUuidModel):
