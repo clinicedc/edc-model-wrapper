@@ -31,11 +31,12 @@ class NextUrlParser:
             [param1, param2, ...]
 
     """
+
     keywords_cls = Keywords
 
     def __init__(self, url_name=None, url_args=None):
         if not url_name:
-            raise NextUrlError(f'Invalid url_name. Got {url_name}.')
+            raise NextUrlError(f"Invalid url_name. Got {url_name}.")
         self.url_name = url_name  # may include url_namespace
         self.url_args = url_args
 
@@ -45,16 +46,18 @@ class NextUrlParser:
             objects: a list of objects to from which to get attr values.
         """
         if self.url_args:
-            next_args = '{}'.format(','.join(self.url_args))
-            url_kwargs = {
-                k: v for k, v in kwargs.items() if k in (self.url_args or [])}
+            next_args = "{}".format(",".join(self.url_args))
+            url_kwargs = {k: v for k, v in kwargs.items() if k in (self.url_args or [])}
             keywords = self.keywords_cls(
-                objects=objects, attrs=self.url_args, include_attrs=self.url_args, **url_kwargs)
-            querystring = parse.urlencode(keywords, encoding='utf-8')
-            return f'{next_args}&{querystring}'
-        return ''
+                objects=objects,
+                attrs=self.url_args,
+                include_attrs=self.url_args,
+                **url_kwargs,
+            )
+            querystring = parse.urlencode(keywords, encoding="utf-8")
+            return f"{next_args}&{querystring}"
+        return ""
 
     def reverse(self, model_wrapper=None):
-        keywords = self.keywords_cls(
-            objects=[model_wrapper], attrs=self.url_args)
-        return reverse(f'{self.url_name}', kwargs=keywords)
+        keywords = self.keywords_cls(objects=[model_wrapper], attrs=self.url_args)
+        return reverse(f"{self.url_name}", kwargs=keywords)

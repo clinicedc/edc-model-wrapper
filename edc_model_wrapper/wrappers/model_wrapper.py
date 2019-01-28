@@ -61,24 +61,35 @@ class ModelWrapper:
     next_url_attrs = []
     querystring_attrs = []
 
-    def __init__(self, model_obj=None, model=None, model_cls=None,
-                 next_url_name=None, next_url_attrs=None,
-                 querystring_attrs=None, **kwargs):
+    def __init__(
+        self,
+        model_obj=None,
+        model=None,
+        model_cls=None,
+        next_url_name=None,
+        next_url_attrs=None,
+        querystring_attrs=None,
+        force_wrap=None,
+        **kwargs,
+    ):
 
         self.object = model_obj
-        self._raise_if_model_obj_is_wrapped()
+        if not force_wrap:
+            self._raise_if_model_obj_is_wrapped()
         self.model_cls = model_cls or self.model_cls or self.object.__class__
-        self.model_name = self.model_cls._meta.object_name.lower().replace(' ', '_')
+        self.model_name = self.model_cls._meta.object_name.lower().replace(" ", "_")
         self.model = model or self.model or self.model_cls._meta.label_lower
         if not isinstance(self.object, self.model_cls):
             raise ModelWrapperModelError(
-                f'Expected an instance of {self.model}. '
-                f'Got model_obj={repr(self.object)}')
+                f"Expected an instance of {self.model}. "
+                f"Got model_obj={repr(self.object)}"
+            )
         if self.model != self.model_cls._meta.label_lower:
             raise ModelWrapperModelError(
-                f'Wrapper is for model {self.model}. '
-                f'Got model_obj={repr(self.object)}. '
-                f'{self.model} != {self.model_cls._meta.label_lower}.')
+                f"Wrapper is for model {self.model}. "
+                f"Got model_obj={repr(self.object)}. "
+                f"{self.model} != {self.model_cls._meta.label_lower}."
+            )
 
         fields_obj = self.fields_cls(model_obj=self.object)
         self.fields = fields_obj.get_field_values_as_strings
@@ -86,36 +97,38 @@ class ModelWrapper:
         self.next_url_name = next_url_name or self.next_url_name
         if not self.next_url_name:
             raise ModelWrapperError(
-                f'Missing next_url_name. See {repr(self)}.')
+                f"Missing next_url_name. See {repr(self)}.")
 
         self.next_url_attrs = next_url_attrs or self.next_url_attrs
         self.querystring_attrs = querystring_attrs or self.querystring_attrs
 
         self.next_url_parser = self.next_url_parser_cls(
-            url_name=self.next_url_name,
-            url_args=self.next_url_attrs)
+            url_name=self.next_url_name, url_args=self.next_url_attrs
+        )
 
         self.wrap_me_with(kwargs)
         self.wrap_me_with({f[0]: f[1] for f in self.fields(wrapper=self)})
 
         # wrap me with next url and it's required attrs
         querystring = self.next_url_parser.querystring(
-            objects=[self, self.object], **kwargs)
+            objects=[self, self.object], **kwargs
+        )
         if querystring:
-            self.next_url = f'{self.next_url_name},{querystring}'
+            self.next_url = f"{self.next_url_name},{querystring}"
         else:
             self.next_url = self.next_url_name
 
         # wrap me with admin urls
         self.get_absolute_url = self.object.get_absolute_url
         # see also UrlModelMixin.admin_url_name
-        self.admin_url_name = f'{self.object.admin_url_name}'
+        self.admin_url_name = f"{self.object.admin_url_name}"
 
         # wrap with an additional querystring for extra values needed
         # in the view
         self.keywords = self.keywords_cls(
-            objects=[self], attrs=self.querystring_attrs, **kwargs)
-        self.querystring = parse.urlencode(self.keywords, encoding='utf-8')
+            objects=[self], attrs=self.querystring_attrs, **kwargs
+        )
+        self.querystring = parse.urlencode(self.keywords, encoding="utf-8")
 
         # flag as wrapped and disable save
         self.object.wrapped = True
@@ -123,11 +136,10 @@ class ModelWrapper:
         self.add_extra_attributes_after()
 
         # reverse admin url (must be registered w/ the site admin)
-        self.href = (
-            f'{self.get_absolute_url()}?next={self.next_url}&{self.querystring}')
+        self.href = f"{self.get_absolute_url()}?next={self.next_url}&{self.querystring}"
 
     def __repr__(self):
-        return f'{self.__class__.__name__}({self.object} id={self.object.id})'
+        return f"{self.__class__.__name__}({self.object} id={self.object.id})"
 
     def __bool__(self):
         return True if self.object.id else False
@@ -148,7 +160,8 @@ class ModelWrapper:
                 model_wrapper=model_wrapper or self)
         except NoReverseMatch as e:
             raise ModelWrapperNoReverseMatch(
-                f'next_url_name={self.next_url_name}. Got {e} {repr(self)}')
+                f"next_url_name={self.next_url_name}. Got {e} {repr(self)}"
+            )
         return next_url
 
     def add_extra_attributes_after(self, **kwargs):
@@ -169,5 +182,6 @@ class ModelWrapper:
             pass
         except AssertionError:
             raise ModelWrapperObjectAlreadyWrapped(
-                f'Model instance is already wrapped. '
-                f'Got wrapped={self.object.wrapped}. See {repr(self)}')
+                f"Model instance is already wrapped. "
+                f"Got wrapped={self.object.wrapped}. See {repr(self)}"
+            )

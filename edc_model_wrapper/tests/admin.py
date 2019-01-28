@@ -6,13 +6,13 @@ from .models import ParentExample, Appointment
 
 
 class AdminSite(DjangoAdminSite):
-    site_title = 'Example'
-    site_header = 'Example'
-    index_title = 'Example'
-    site_url = '/'
+    site_title = "Example"
+    site_header = "Example"
+    index_title = "Example"
+    site_url = "/"
 
 
-edc_model_wrapper_admin = AdminSite(name='edc_model_wrapper_admin')
+edc_model_wrapper_admin = AdminSite(name="edc_model_wrapper_admin")
 
 
 @admin.register(Example, site=edc_model_wrapper_admin)
