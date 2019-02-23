@@ -1,3 +1,4 @@
+from django.urls.base import reverse
 from django.urls.exceptions import NoReverseMatch
 from urllib import parse
 
@@ -185,3 +186,10 @@ class ModelWrapper:
                 f"Model instance is already wrapped. "
                 f"Got wrapped={self.object.wrapped}. See {repr(self)}"
             )
+
+    @property
+    def history_url(self):
+        admin = self.admin_url_name.split(":")[0]
+        return reverse(
+            f"{admin}:{self.object._meta.app_label}_{self.object._meta.model_name}_history",
+            args=(str(self.object.id), ))
