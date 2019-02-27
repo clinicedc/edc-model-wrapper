@@ -30,8 +30,7 @@ class TestModelWrapper(TestCase):
         """Asserts can construct.
         """
         obj = Example()
-        ModelWrapper(model_obj=obj, model_cls=Example,
-                     next_url_name="thenexturl")
+        ModelWrapper(model_obj=obj, model_cls=Example, next_url_name="thenexturl")
 
     def test_model_wrapper_assumes_model_cls(self):
         """Asserts can construct.
@@ -78,8 +77,7 @@ class TestModelWrapper(TestCase):
 
     def test_model_wrapper_adds_kwargs_to_self(self):
         obj = Example()
-        wrapper = ModelWrapper(
-            model_obj=obj, next_url_name="thenexturl", erik="silly")
+        wrapper = ModelWrapper(model_obj=obj, next_url_name="thenexturl", erik="silly")
         self.assertEqual(wrapper.erik, "silly")
 
     def test_model_wrapper_bool(self):
@@ -112,8 +110,7 @@ class TestModelWrapper(TestCase):
         wrapper = ModelWrapper(
             model_obj=obj, model_cls=Example, next_url_name="thenexturl"
         )
-        self.assertEqual(wrapper._meta.label_lower,
-                         "edc_model_wrapper.example")
+        self.assertEqual(wrapper._meta.label_lower, "edc_model_wrapper.example")
 
     def test_model_wrapper_repr(self):
         """Asserts wrapper maintains _meta.
@@ -200,8 +197,7 @@ class TestExampleWrappers(TestCase):
     def test_model_wrapper_model_next_url(self):
         model_obj = Example(f1=1, f2=2, f3=3)
         wrapper = self.wrapper_cls(model_obj=model_obj)
-        self.assertEqual(wrapper.next_url,
-                         "edc-model-wrapper:listboard_url,f1&f1=1")
+        self.assertEqual(wrapper.next_url, "edc-model-wrapper:listboard_url,f1&f1=1")
 
     def test_example_href_add(self):
         model_obj = Example(f1=1, f2=2, f3=3)
@@ -297,8 +293,7 @@ class TestExampleWrappers2(TestCase):
                 try:
                     model_obj = self.object.subjectvisit
                 except ObjectDoesNotExist:
-                    model_obj = SubjectVisit(
-                        appointment=Appointment(a1=1), v1=1)
+                    model_obj = SubjectVisit(appointment=Appointment(a1=1), v1=1)
                 return SubjectVisitModelWrapper1(model_obj=model_obj)
 
         class AppointmentModelWrapper2(ModelWrapper):
@@ -330,8 +325,7 @@ class TestExampleWrappers2(TestCase):
     def test_wrapper_appointment_href(self):
         model_obj = Appointment.objects.create(a1=1)
         wrapper = self.appointment_model_wrapper1_cls(model_obj=model_obj)
-        self.assertIn(
-            "next=edc-model-wrapper:listboard_url,a1&a1=1", wrapper.href)
+        self.assertIn("next=edc-model-wrapper:listboard_url,a1&a1=1", wrapper.href)
 
     def test_wrapper_visit_href(self):
         model_obj = Appointment.objects.create(a1=1)

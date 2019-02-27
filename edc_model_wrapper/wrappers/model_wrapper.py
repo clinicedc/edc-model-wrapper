@@ -97,8 +97,7 @@ class ModelWrapper:
 
         self.next_url_name = next_url_name or self.next_url_name
         if not self.next_url_name:
-            raise ModelWrapperError(
-                f"Missing next_url_name. See {repr(self)}.")
+            raise ModelWrapperError(f"Missing next_url_name. See {repr(self)}.")
 
         self.next_url_attrs = next_url_attrs or self.next_url_attrs
         self.querystring_attrs = querystring_attrs or self.querystring_attrs
@@ -157,8 +156,7 @@ class ModelWrapper:
         """Returns the reversed next_url_name or None.
         """
         try:
-            next_url = self.next_url_parser.reverse(
-                model_wrapper=model_wrapper or self)
+            next_url = self.next_url_parser.reverse(model_wrapper=model_wrapper or self)
         except NoReverseMatch as e:
             raise ModelWrapperNoReverseMatch(
                 f"next_url_name={self.next_url_name}. Got {e} {repr(self)}"
@@ -194,4 +192,5 @@ class ModelWrapper:
             return None
         return reverse(
             f"{admin}:{self.object._meta.app_label}_{self.object._meta.model_name}_history",
-            args=(str(self.object.id), ))
+            args=(str(self.object.id),),
+        )
