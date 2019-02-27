@@ -190,6 +190,8 @@ class ModelWrapper:
     @property
     def history_url(self):
         admin = self.admin_url_name.split(":")[0]
+        if not self.object.id:
+            return None
         return reverse(
             f"{admin}:{self.object._meta.app_label}_{self.object._meta.model_name}_history",
             args=(str(self.object.id), ))
