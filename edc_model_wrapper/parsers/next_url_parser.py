@@ -1,5 +1,5 @@
-from urllib import parse
 from django.urls.base import reverse
+from urllib import parse
 
 from .keywords import Keywords
 
