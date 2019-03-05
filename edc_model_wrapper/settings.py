@@ -29,9 +29,6 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.sites",
-    "edc_base.apps.AppConfig",
-    "edc_protocol.apps.AppConfig",
-    "edc_device.apps.AppConfig",
     "edc_model_wrapper.apps.AppConfig",
 ]
 
@@ -45,7 +42,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = "edc_model_wrapper.urls"
+ROOT_URLCONF = "edc_model_wrapper.tests.urls"
 
 TEMPLATES = [
     {

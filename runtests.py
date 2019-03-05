@@ -5,7 +5,7 @@ import sys
 
 from django.conf import settings
 from django.test.runner import DiscoverRunner
-from os.path import abspath, dirname
+from os.path import abspath, dirname, join
 
 
 class DisableMigrations:
@@ -28,22 +28,25 @@ installed_apps = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.sites",
-    "edc_base.apps.AppConfig",
-    "edc_protocol.apps.AppConfig",
-    "edc_device.apps.AppConfig",
-    f"{app_name}.apps.AppConfig",
+    "edc_model_wrapper.apps.AppConfig",
 ]
 
 DEFAULT_SETTINGS = dict(
     BASE_DIR=base_dir,
+    SITE_ID=10,
     ALLOWED_HOSTS=['localhost'],
-    # AUTH_USER_MODEL='custom_user.CustomUser',
-    ROOT_URLCONF=f'{app_name}.urls',
+    ROOT_URLCONF=f'{app_name}.tests.urls',
     STATIC_URL='/static/',
     INSTALLED_APPS=installed_apps,
     DATABASES={
+        # required for tests when acting as a server that deserializes
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': join(base_dir, 'db.sqlite3'),
+        },
+        'client': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': join(base_dir, 'db.sqlite3'),
         },
     },
     TEMPLATES=[{
@@ -73,6 +76,7 @@ DEFAULT_SETTINGS = dict(
     USE_TZ=True,
 
     APP_NAME=app_name,
+    EDC_BOOTSTRAP=3,
 
     DEFAULT_FILE_STORAGE='inmemorystorage.InMemoryStorage',
     MIGRATION_MODULES=DisableMigrations(),

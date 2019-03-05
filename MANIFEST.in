@@ -2,5 +2,5 @@ include AUTHORS CHANGES LICENSE VERSION
 include MANIFEST.in
 include *.rst
 include *.txt
-recursive-include docs *.rst
-recursive-include edc_visit_tracking/templates *
+recursive-include edc_model_wrapper/templates *
+recursive-include edc_model_wrapper/static *
