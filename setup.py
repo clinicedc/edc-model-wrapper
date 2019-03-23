@@ -11,7 +11,7 @@ with open(join(dirname(__file__), 'README.rst')) as readme:
 with open(join(dirname(__file__), 'VERSION')) as f:
     VERSION = f.read()
 
-tests_require = ['edc-model']
+tests_require = ['edc-model', "edc_test_utils", "coverage"]
 with open(os.path.join(dirname(abspath(__file__)), 'requirements.txt')) as f:
     for line in f:
         tests_require.append(line.strip())

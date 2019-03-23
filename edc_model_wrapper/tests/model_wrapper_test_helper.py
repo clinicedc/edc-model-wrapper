@@ -20,8 +20,7 @@ class ModelWrapperTestHelper:
         if app_label:
             model = self.model_wrapper.model or model
             self.model_wrapper.model = f'{app_label}.{model.split(".")[1]}'
-        self.model_wrapper.next_url_name = model_wrapper.next_url_name.split(":")[
-            1]
+        self.model_wrapper.next_url_name = model_wrapper.next_url_name.split(":")[1]
         self.options = kwargs
         if model_obj:
             self.model_cls = model_obj.__class__

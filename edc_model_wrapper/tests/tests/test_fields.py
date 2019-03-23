@@ -19,8 +19,7 @@ class TestFields(TestCase):
 
         wrapper = Wrapper()
         fields = Fields(model_obj=ParentExample())
-        self.assertNotIn("example", dict(
-            fields.get_field_values_as_strings(wrapper)))
+        self.assertNotIn("example", dict(fields.get_field_values_as_strings(wrapper)))
 
     def test_fields_rel(self):
         model_obj = Example.objects.create()
