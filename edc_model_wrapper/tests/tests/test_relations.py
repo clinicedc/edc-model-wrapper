@@ -1,7 +1,7 @@
 from django.test import TestCase, tag
 
-from ..wrappers import ModelRelation, LogModelRelation
-from .models import (
+from ...wrappers import ModelRelation, LogModelRelation
+from ..models import (
     Example,
     ExampleLog,
     ExampleLogEntry,
@@ -42,7 +42,8 @@ class TestLogModelRelations(TestCase):
         self.example = Example.objects.create(
             example_identifier=self.example_identifier
         )
-        self.parent_example = ParentExample.objects.create(example=self.example)
+        self.parent_example = ParentExample.objects.create(
+            example=self.example)
         self.super_parent_example = SuperParentExample.objects.create(
             parent_example=self.parent_example
         )

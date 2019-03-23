@@ -1,6 +1,6 @@
 from django.test import TestCase, tag
 
-from ..parsers import NextUrlParser, NextUrlError
+from ...parsers import NextUrlParser, NextUrlError
 
 
 class DummyObj:
@@ -14,7 +14,8 @@ class TestNextUrlParser(TestCase):
         obj1 = DummyObj(f1=1, f2=2)
         obj2 = DummyObj(f3=1, f4=2)
         parser = NextUrlParser(url_name="listboard_url", url_args=["f1", "f2"])
-        self.assertEqual(parser.querystring(objects=[obj2, obj1]), "f1,f2&f1=1&f2=2")
+        self.assertEqual(parser.querystring(
+            objects=[obj2, obj1]), "f1,f2&f1=1&f2=2")
 
     def test_url_parser_no_name_raises(self):
         self.assertRaises(NextUrlError, NextUrlParser)
