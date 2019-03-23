@@ -1,6 +1,6 @@
 from django.test import TestCase, tag
 
-from ..parsers import NextUrlParser, NextUrlError
+from ...parsers import NextUrlParser, NextUrlError
 
 
 class DummyObj:

@@ -2,13 +2,13 @@ from datetime import timedelta
 from django.test import TestCase, tag
 from edc_utils import get_utcnow
 
-from ..wrappers import ModelWrapper, ModelWithLogWrapper
-from .models import Example, ExampleLog, ExampleLogEntry, ParentExample
+from ...wrappers import ModelWrapper, ModelWithLogWrapper
+from ..models import Example, ExampleLog, ExampleLogEntry, ParentExample
 
 
 class ExampleModelWrapper(ModelWrapper):
     model = "edc_model_wrapper.example"
-    next_url_name = "edc-model-wrapper:listboard_url"
+    next_url_name = "listboard_url"
     next_url_attrs = ["f1"]
     querystring_attrs = ["f2", "f3"]
 
@@ -16,7 +16,7 @@ class ExampleModelWrapper(ModelWrapper):
 class ParentExampleModelWrapper(ModelWrapper):
 
     model = "edc_model_wrapper.parentexample"
-    next_url_name = "edc-model-wrapper:listboard_url"
+    next_url_name = "listboard_url"
     next_url_attrs = ["f1"]
     querystring_attrs = ["f2", "f3"]
 
@@ -24,7 +24,7 @@ class ParentExampleModelWrapper(ModelWrapper):
 class ExampleLogEntryModelWrapper(ModelWrapper):
 
     model = "edc_model_wrapper.examplelogentry"
-    next_url_name = "edc-model-wrapper:listboard_url"
+    next_url_name = "listboard_url"
     next_url_attrs = ["example_identifier", "example_log"]
     querystring_attrs = ["f2", "f3"]
 
@@ -171,16 +171,15 @@ class TestModelWithLogWrapperUrls(TestCase):
             next_url_attrs=["example_identifier", "example_log"],
             next_url_name="listboard_url",
         )
-        self.assertIn(f"example_log={example_log.id}", wrapper.log_entry.next_url)
-        self.assertIn("listboard_url", wrapper.log_entry.next_url.split("&")[0])
+        self.assertIn(f"example_log={example_log.id}", wrapper.log_entry.href)
+        self.assertIn("listboard_url", wrapper.log_entry.href)
 
-        self.assertIn("example_log", wrapper.log_entry.next_url.split("&")[0])
+        self.assertIn("example_log", wrapper.log_entry.href)
 
-        self.assertIn("example_identifier", wrapper.log_entry.next_url.split("&")[0])
+        self.assertIn("example_identifier", wrapper.log_entry.href)
 
         self.assertIn(
-            f"example_identifier={example.example_identifier}",
-            wrapper.log_entry.next_url,
+            f"example_identifier={example.example_identifier}", wrapper.log_entry.href
         )
 
     def test_wrapper_next_url(self):
@@ -191,12 +190,11 @@ class TestModelWithLogWrapperUrls(TestCase):
         wrapper = ModelWithLogWrapper(
             model_obj=example,
             next_url_attrs=["example_identifier", "example_log"],
-            next_url_name="edc-model-wrapper:listboard_url",
+            next_url_name="listboard_url",
         )
-        self.assertIsNotNone(wrapper.next_url)
-        self.assertTrue(wrapper.next_url != "")
+        next_url = wrapper.href.split("next=")[1]
         self.assertEqual(
-            wrapper.next_url,
-            f"edc-model-wrapper:listboard_url,example_identifier,example_log"
-            f"&example_identifier={example_identifier}&example_log={str(example_log.id)}",
+            next_url,
+            f"edc_model_wrapper:listboard_url,example_identifier,example_log"
+            f"&example_identifier={example_identifier}&example_log={str(example_log.id)}&",
         )

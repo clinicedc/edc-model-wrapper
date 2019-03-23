@@ -1,7 +1,7 @@
 from django.test import TestCase, tag
 
-from ..wrappers import Fields, ModelWrapper
-from .models import Example, ParentExample
+from ...wrappers import Fields, ModelWrapper
+from ..models import Example, ParentExample
 
 
 class TestFields(TestCase):

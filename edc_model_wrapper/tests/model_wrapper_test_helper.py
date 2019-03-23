@@ -47,7 +47,7 @@ class ModelWrapperTestHelper:
 
         # next_url
         wrapper = self.model_wrapper(model_obj=copy(self.model_obj))
-        testcase.assertIsNotNone(wrapper.next_url, msg="next_url")
+        testcase.assertIsNotNone(wrapper.href, msg="href")
 
         # querystring
         wrapper = self.model_wrapper(model_obj=copy(self.model_obj))

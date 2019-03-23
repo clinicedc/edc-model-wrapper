@@ -1,4 +1,4 @@
-|pypi| |travis| |coverage|
+|pypi| |travis| |codecov| |downloads|
 
 
 edc-model-wrapper
@@ -101,5 +101,8 @@ for example to access original field values:
 .. |travis| image:: https://travis-ci.org/clinicedc/edc-model-wrapper.svg?branch=develop
     :target: https://travis-ci.org/clinicedc/edc-model-wrapper
     
-.. |coverage| image:: https://coveralls.io/repos/github/clinicedc/edc-model-wrapper/badge.svg?branch=develop
-    :target: https://coveralls.io/github/clinicedc/edc-model-wrapper?branch=develop
+.. |codecov| image:: https://codecov.io/gh/clinicedc/edc-model-wrapper/branch/develop/graph/badge.svg
+  :target: https://codecov.io/gh/clinicedc/edc-model-wrapper
+
+.. |downloads| image:: https://pepy.tech/badge/edc-model-wrapper
+   :target: https://pepy.tech/project/edc-model-wrapper

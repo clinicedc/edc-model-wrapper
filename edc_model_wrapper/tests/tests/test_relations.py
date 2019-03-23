@@ -1,7 +1,7 @@
 from django.test import TestCase, tag
 
-from ..wrappers import ModelRelation, LogModelRelation
-from .models import (
+from ...wrappers import ModelRelation, LogModelRelation
+from ..models import (
     Example,
     ExampleLog,
     ExampleLogEntry,

@@ -3,8 +3,8 @@ import uuid
 from django.test import TestCase, tag
 from urllib import parse
 
-from ..parsers import Keywords
-from .models import ParentExample, Example, SuperParentExample
+from ...parsers import Keywords
+from ..models import ParentExample, Example, SuperParentExample
 
 
 class DummyObj:
