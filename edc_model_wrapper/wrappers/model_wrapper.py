@@ -59,7 +59,7 @@ class ModelWrapper:
 
     model = None  # label_lower
     model_cls = None
-    next_url_name = None  # should include namespace:url_name
+    next_url_name = None  # dict key for edc_dashboard.url_names
     next_url_attrs = []
     querystring_attrs = []
 
