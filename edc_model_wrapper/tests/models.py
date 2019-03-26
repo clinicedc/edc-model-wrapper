@@ -14,7 +14,7 @@ class Example(BaseUuidModel):
 
     f2 = models.CharField(max_length=10, null=True)
 
-    f3 = models.CharField(max_length=10, default=uuid.uuid4())
+    f3 = models.CharField(max_length=50, default=uuid.uuid4())
 
     report_datetime = models.DateTimeField(default=get_utcnow)
 
@@ -27,7 +27,7 @@ class UnrelatedExample(BaseUuidModel):
 
     f2 = models.CharField(max_length=10, null=True)
 
-    f3 = models.CharField(max_length=10, default=uuid.uuid4())
+    f3 = models.CharField(max_length=50, default=uuid.uuid4())
 
     report_datetime = models.DateTimeField(default=get_utcnow)
 
@@ -38,7 +38,7 @@ class ParentExample(BaseUuidModel):
 
     f2 = models.CharField(max_length=10, null=True)
 
-    f3 = models.CharField(max_length=10, default=uuid.uuid4())
+    f3 = models.CharField(max_length=50, default=uuid.uuid4())
 
     example = models.ForeignKey(Example, null=True, on_delete=PROTECT)
 
@@ -51,7 +51,7 @@ class SuperParentExample(BaseUuidModel):
 
     f2 = models.CharField(max_length=10, null=True)
 
-    f3 = models.CharField(max_length=10, default=uuid.uuid4())
+    f3 = models.CharField(max_length=50, default=uuid.uuid4())
 
     parent_example = models.ForeignKey(ParentExample, on_delete=PROTECT)
 
