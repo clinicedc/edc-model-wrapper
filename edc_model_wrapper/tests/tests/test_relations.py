@@ -35,7 +35,6 @@ class TestModelRelations(TestCase):
         self.assertIsInstance(model_relations.log_entry, ExampleLogEntry)
 
 
-@tag("1")
 class TestLogModelRelations(TestCase):
     def setUp(self):
         self.example_identifier = "12345"

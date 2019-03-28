@@ -22,4 +22,4 @@ class TestNextUrlParser(TestCase):
     def test_url_parser_reverse(self):
         obj1 = DummyObj(f2=1, f3=2)
         parser = NextUrlParser(url_name="listboard_url", url_args=["f2", "f3"])
-        parser.reverse(model_wrapper=obj1)
+        parser.reverse(model_wrapper=obj1, remove_namespace=True)
