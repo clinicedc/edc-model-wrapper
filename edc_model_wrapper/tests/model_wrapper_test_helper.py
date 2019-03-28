@@ -1,6 +1,5 @@
 from copy import copy
 from django.apps import apps as django_apps
-from pprint import pprint
 
 
 class ModelWrapperTestHelper:
