@@ -35,14 +35,14 @@ class TestModelRelations(TestCase):
         self.assertIsInstance(model_relations.log_entry, ExampleLogEntry)
 
 
-@tag("1")
 class TestLogModelRelations(TestCase):
     def setUp(self):
         self.example_identifier = "12345"
         self.example = Example.objects.create(
             example_identifier=self.example_identifier
         )
-        self.parent_example = ParentExample.objects.create(example=self.example)
+        self.parent_example = ParentExample.objects.create(
+            example=self.example)
         self.super_parent_example = SuperParentExample.objects.create(
             parent_example=self.parent_example
         )

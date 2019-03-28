@@ -1,4 +1,5 @@
 from django.urls.base import reverse
+from edc_dashboard.url_names import url_names, InvalidUrlName
 from urllib import parse
 
 from .keywords import Keywords
@@ -35,9 +36,14 @@ class NextUrlParser:
     keywords_cls = Keywords
 
     def __init__(self, url_name=None, url_args=None):
-        if not url_name:
-            raise NextUrlError(f"Invalid url_name. Got {url_name}.")
-        self.url_name = url_name  # may include url_namespace
+        try:
+            # assume this is a key in global `url_names`
+            self.url_name = url_names.get(url_name)
+        except InvalidUrlName:
+            if not url_name:
+                raise NextUrlError(f"Invalid url_name. Got {url_name}.")
+            # assume not a key but an explicitly declared `url_name`
+            self.url_name = url_name
         self.url_args = url_args
 
     def querystring(self, objects=None, **kwargs):
@@ -47,7 +53,8 @@ class NextUrlParser:
         """
         if self.url_args:
             next_args = "{}".format(",".join(self.url_args))
-            url_kwargs = {k: v for k, v in kwargs.items() if k in (self.url_args or [])}
+            url_kwargs = {k: v for k, v in kwargs.items(
+            ) if k in (self.url_args or [])}
             keywords = self.keywords_cls(
                 objects=objects,
                 attrs=self.url_args,
@@ -58,6 +65,10 @@ class NextUrlParser:
             return f"{next_args}&{querystring}"
         return ""
 
-    def reverse(self, model_wrapper=None):
-        keywords = self.keywords_cls(objects=[model_wrapper], attrs=self.url_args)
-        return reverse(f"{self.url_name}", kwargs=keywords)
+    def reverse(self, model_wrapper=None, remove_namespace=None):
+        keywords = self.keywords_cls(
+            objects=[model_wrapper], attrs=self.url_args)
+        url_name = self.url_name
+        if remove_namespace:
+            url_name = url_name.split(":")[1]
+        return reverse(f"{url_name}", kwargs=keywords)

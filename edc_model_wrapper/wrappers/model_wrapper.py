@@ -1,5 +1,4 @@
 from django.urls.base import reverse
-from django.urls.exceptions import NoReverseMatch
 from edc_dashboard import url_names
 from urllib import parse
 
@@ -77,7 +76,6 @@ class ModelWrapper:
 
         self._href = None
         self._next_url = None
-        self._next_url_name = next_url_name or self.next_url_name
         self.kwargs = kwargs
 
         self.object = model_obj
@@ -101,8 +99,19 @@ class ModelWrapper:
         fields_obj = self.fields_cls(model_obj=self.object)
         self.fields = fields_obj.get_field_values_as_strings
 
+        # for the full querystring which includes the next url
+        # for example:
+        #   next=namespace:url,attr1,attr2&attr1=value2&attr2=value2
+        self.next_url_name = next_url_name or self.next_url_name
         self.next_url_attrs = next_url_attrs or self.next_url_attrs
         self.querystring_attrs = querystring_attrs or self.querystring_attrs
+        self.keywords = self.keywords_cls(
+            objects=[self, self.object], attrs=self.querystring_attrs, **self.kwargs
+        )
+        self.next_url_parser = self.next_url_parser_cls(
+            url_name=self.next_url_name, url_args=self.next_url_attrs
+        )
+        self.next_url = url_names.get(self.next_url_name)
 
         self.wrap_me_with(self.kwargs)
         self.wrap_me_with({f[0]: f[1] for f in self.fields(wrapper=self)})
@@ -112,16 +121,12 @@ class ModelWrapper:
         # see also UrlModelMixin.admin_url_name
         self.admin_url_name = f"{self.object.admin_url_name}"
 
-        # wrap with an additional querystring for extra values needed
-        # in the view
-        self.keywords = self.keywords_cls(
-            objects=[self], attrs=self.querystring_attrs, **self.kwargs
-        )
-        self.querystring = parse.urlencode(self.keywords, encoding="utf-8")
-
         # flag as wrapped and disable save
         self.object.wrapped = True
         self.object.save = None
+
+        self.href = f"{self.get_absolute_url()}?{self.querystring}"
+
         self.add_extra_attributes_after()
 
     def __repr__(self):
@@ -131,31 +136,15 @@ class ModelWrapper:
         return True if self.object.id else False
 
     @property
-    def href(self):
-        # reverse admin url (must be registered w/ the site admin)
-        if not self._href:
-            # wrap me with next url and it's required attrs
-            next_url = url_names.get(self.get_next_url_name())
-            querystring = self.next_url_parser.querystring(
-                objects=[self, self.object], **self.kwargs
-            )
-            if querystring:
-                next_url = f"{next_url},{querystring}"
-            self._href = f"{self.get_absolute_url()}?next={next_url}&{self.querystring}"
-        return self._href
-
-    def get_next_url_name(self):
-        if not self._next_url_name:
-            raise ModelWrapperError(
-                f"'next_url_name' cannot be None. See {repr(self)}."
-            )
-        return self._next_url_name
-
-    @property
-    def next_url_parser(self):
-        return self.next_url_parser_cls(
-            url_name=self.get_next_url_name(), url_args=self.next_url_attrs
+    def querystring(self):
+        next_string = self.next_url
+        next_attrs = self.next_url_parser.querystring(
+            objects=[self, self.object], **self.kwargs
         )
+        if next_attrs:
+            next_string = f"{next_string},{next_attrs}"
+        querystring = parse.urlencode(self.keywords, encoding="utf-8")
+        return f"next={next_string}&{querystring}"
 
     def wrap_me_with(self, dct):
         for key, value in dct.items():
@@ -164,17 +153,6 @@ class ModelWrapper:
             except AttributeError:
                 # skip if attr cannot be overwritten
                 pass
-
-    def reverse(self, model_wrapper=None):
-        """Returns the reversed next_url_name or None.
-        """
-        try:
-            next_url = self.next_url_parser.reverse(model_wrapper=model_wrapper or self)
-        except NoReverseMatch as e:
-            raise ModelWrapperNoReverseMatch(
-                f"next_url_name={self.get_next_url_name()}. Got {e} {repr(self)}"
-            )
-        return next_url
 
     def add_extra_attributes_after(self, **kwargs):
         """Called after the model is wrapped.
