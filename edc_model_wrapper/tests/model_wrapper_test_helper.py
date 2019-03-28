@@ -8,12 +8,7 @@ class ModelWrapperTestHelper:
     # dashboard_url = "/dashboard/"
 
     def __init__(
-        self,
-        model_wrapper=None,
-        app_label=None,
-        model=None,
-        model_obj=None,
-        **kwargs,
+        self, model_wrapper=None, app_label=None, model=None, model_obj=None, **kwargs
     ):
         self.model_wrapper = model_wrapper
         if app_label:

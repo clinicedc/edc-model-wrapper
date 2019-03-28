@@ -5,7 +5,6 @@ from ..models import Example
 
 
 class TestExampleWrappers(TestCase):
-
     def setUp(self):
         class ExampleModelWrapper(ModelWrapper):
             model = "edc_model_wrapper.example"

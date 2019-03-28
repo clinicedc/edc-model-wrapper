@@ -53,8 +53,7 @@ class NextUrlParser:
         """
         if self.url_args:
             next_args = "{}".format(",".join(self.url_args))
-            url_kwargs = {k: v for k, v in kwargs.items(
-            ) if k in (self.url_args or [])}
+            url_kwargs = {k: v for k, v in kwargs.items() if k in (self.url_args or [])}
             keywords = self.keywords_cls(
                 objects=objects,
                 attrs=self.url_args,
@@ -66,8 +65,7 @@ class NextUrlParser:
         return ""
 
     def reverse(self, model_wrapper=None, remove_namespace=None):
-        keywords = self.keywords_cls(
-            objects=[model_wrapper], attrs=self.url_args)
+        keywords = self.keywords_cls(objects=[model_wrapper], attrs=self.url_args)
         url_name = self.url_name
         if remove_namespace:
             url_name = url_name.split(":")[1]

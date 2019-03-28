@@ -1,5 +1,4 @@
 from django.contrib import admin
-from django.core.exceptions import ObjectDoesNotExist
 from django.test import TestCase, tag  # noqa
 
 from ...wrappers import (
@@ -27,7 +26,6 @@ class SubjectVisitAdmin(admin.ModelAdmin):
 
 
 class TestModelWrapper(TestCase):
-
     @classmethod
     def setUpClass(cls):
         url_names.register("thenexturl", "thenexturl", "edc_model_wrapper")
@@ -42,8 +40,7 @@ class TestModelWrapper(TestCase):
         """Asserts can construct.
         """
         obj = Example()
-        ModelWrapper(model_obj=obj, model_cls=Example,
-                     next_url_name="thenexturl")
+        ModelWrapper(model_obj=obj, model_cls=Example, next_url_name="thenexturl")
 
     def test_model_wrapper_assumes_model_cls(self):
         """Asserts can construct.
@@ -90,8 +87,7 @@ class TestModelWrapper(TestCase):
 
     def test_model_wrapper_adds_kwargs_to_self(self):
         obj = Example()
-        wrapper = ModelWrapper(
-            model_obj=obj, next_url_name="thenexturl", erik="silly")
+        wrapper = ModelWrapper(model_obj=obj, next_url_name="thenexturl", erik="silly")
         self.assertEqual(wrapper.erik, "silly")
 
     def test_model_wrapper_bool(self):
@@ -124,8 +120,7 @@ class TestModelWrapper(TestCase):
         wrapper = ModelWrapper(
             model_obj=obj, model_cls=Example, next_url_name="thenexturl"
         )
-        self.assertEqual(wrapper._meta.label_lower,
-                         "edc_model_wrapper.example")
+        self.assertEqual(wrapper._meta.label_lower, "edc_model_wrapper.example")
 
     def test_model_wrapper_repr(self):
         """Asserts wrapper maintains _meta.

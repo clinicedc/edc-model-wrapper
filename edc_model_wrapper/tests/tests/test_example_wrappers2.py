@@ -38,8 +38,7 @@ class TestExampleWrappers2(TestCase):
                 try:
                     model_obj = self.object.subjectvisit
                 except ObjectDoesNotExist:
-                    model_obj = SubjectVisit(
-                        appointment=Appointment(a1=1), v1=1)
+                    model_obj = SubjectVisit(appointment=Appointment(a1=1), v1=1)
                 return SubjectVisitModelWrapper1(model_obj=model_obj)
 
         class AppointmentModelWrapper2(ModelWrapper):
@@ -71,8 +70,7 @@ class TestExampleWrappers2(TestCase):
     def test_wrapper_appointment_href(self):
         model_obj = Appointment.objects.create(a1=1)
         wrapper = self.appointment_model_wrapper1_cls(model_obj=model_obj)
-        self.assertIn(
-            "next=edc_model_wrapper:listboard_url,a1&a1=1", wrapper.href)
+        self.assertIn("next=edc_model_wrapper:listboard_url,a1&a1=1", wrapper.href)
 
     def test_wrapper_visit_href(self):
         model_obj = Appointment.objects.create(a1=1)
