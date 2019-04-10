@@ -3,7 +3,6 @@ from django.apps import apps as django_apps
 
 
 class ModelWrapperTestHelper:
-
     def __init__(
         self, model_wrapper=None, app_label=None, model=None, model_obj=None, **kwargs
     ):
