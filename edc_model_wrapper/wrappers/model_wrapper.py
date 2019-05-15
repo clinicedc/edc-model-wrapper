@@ -4,6 +4,7 @@ from urllib import parse
 
 from ..parsers import NextUrlParser, Keywords
 from .fields import Fields
+from pprint import pprint
 
 
 class ModelWrapperError(Exception):
@@ -58,6 +59,11 @@ class ModelWrapper:
 
     model = None  # label_lower
     model_cls = None
+
+    cancel_attr = "cancel"
+    cancel_url_name = None  # dict key for edc_dashboard.url_names
+    cancel_url_attrs = []
+    next_attr = 'next'
     next_url_name = None  # dict key for edc_dashboard.url_names
     next_url_attrs = []
     querystring_attrs = []
@@ -67,6 +73,8 @@ class ModelWrapper:
         model_obj=None,
         model=None,
         model_cls=None,
+        cancel_url_name=None,
+        cancel_url_attrs=None,
         next_url_name=None,
         next_url_attrs=None,
         querystring_attrs=None,
@@ -74,8 +82,6 @@ class ModelWrapper:
         **kwargs,
     ):
 
-        self._href = None
-        self._next_url = None
         self.kwargs = kwargs
 
         self.object = model_obj
@@ -104,14 +110,19 @@ class ModelWrapper:
         #   next=namespace:url,attr1,attr2&attr1=value2&attr2=value2
         self.next_url_name = next_url_name or self.next_url_name
         self.next_url_attrs = next_url_attrs or self.next_url_attrs
+        self.next_url = url_names.get(self.next_url_name)
+
+        self.cancel_url_name = cancel_url_name or self.cancel_url_name
+        if self.cancel_url_name:
+            self.cancel_url = url_names.get(self.cancel_url_name)
+            self.cancel_url_attrs = cancel_url_attrs or self.cancel_url_attrs
+        else:
+            self.cancel_url = None
+
         self.querystring_attrs = querystring_attrs or self.querystring_attrs
         self.keywords = self.keywords_cls(
             objects=[self, self.object], attrs=self.querystring_attrs, **self.kwargs
         )
-        self.next_url_parser = self.next_url_parser_cls(
-            url_name=self.next_url_name, url_args=self.next_url_attrs
-        )
-        self.next_url = url_names.get(self.next_url_name)
 
         self.wrap_me_with(self.kwargs)
         self.wrap_me_with({f[0]: f[1] for f in self.fields(wrapper=self)})
@@ -137,14 +148,36 @@ class ModelWrapper:
 
     @property
     def querystring(self):
-        next_string = self.next_url
-        next_attrs = self.next_url_parser.querystring(
+
+        strings = []
+
+        # next
+        next_url_parser = self.next_url_parser_cls(
+            url_name=self.next_url_name, url_args=self.next_url_attrs
+        )
+        next_attrs = next_url_parser.querystring(
             objects=[self, self.object], **self.kwargs
         )
         if next_attrs:
-            next_string = f"{next_string},{next_attrs}"
-        querystring = parse.urlencode(self.keywords, encoding="utf-8")
-        return f"next={next_string}&{querystring}"
+            strings.append(f"{self.next_attr}={self.next_url},{next_attrs}")
+        else:
+            strings.append(self.next_url)
+
+        # cancel
+        if self.cancel_url:
+            cancel_url_parser = self.next_url_parser_cls(
+                url_name=self.cancel_url_name, url_args=self.cancel_url_attrs
+            )
+            cancel_attrs = cancel_url_parser.querystring(
+                objects=[self, self.object], **self.kwargs
+            )
+            if cancel_attrs:
+                strings.append(
+                    f"{self.cancel_attr}={self.cancel_url},{cancel_attrs}")
+            else:
+                strings.append(self.cancel_url)
+        strings.append(parse.urlencode(self.keywords, encoding="utf-8"))
+        return "&".join(strings)
 
     def wrap_me_with(self, dct):
         for key, value in dct.items():
