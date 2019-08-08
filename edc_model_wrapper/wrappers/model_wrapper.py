@@ -5,6 +5,7 @@ from urllib import parse
 from ..parsers import NextUrlParser, Keywords
 from .fields import Fields
 from pprint import pprint
+import pdb
 
 
 class ModelWrapperError(Exception):
@@ -63,7 +64,7 @@ class ModelWrapper:
     cancel_attr = "cancel"
     cancel_url_name = None  # dict key for edc_dashboard.url_names
     cancel_url_attrs = []
-    next_attr = 'next'
+    next_attr = "next"
     next_url_name = None  # dict key for edc_dashboard.url_names
     next_url_attrs = []
     querystring_attrs = []
@@ -150,7 +151,6 @@ class ModelWrapper:
     def querystring(self):
 
         strings = []
-
         # next
         next_url_parser = self.next_url_parser_cls(
             url_name=self.next_url_name, url_args=self.next_url_attrs
@@ -161,7 +161,7 @@ class ModelWrapper:
         if next_attrs:
             strings.append(f"{self.next_attr}={self.next_url},{next_attrs}")
         else:
-            strings.append(self.next_url)
+            strings.append(f"{self.next_attr}={self.next_url}")
 
         # cancel
         if self.cancel_url:
@@ -172,8 +172,7 @@ class ModelWrapper:
                 objects=[self, self.object], **self.kwargs
             )
             if cancel_attrs:
-                strings.append(
-                    f"{self.cancel_attr}={self.cancel_url},{cancel_attrs}")
+                strings.append(f"{self.cancel_attr}={self.cancel_url},{cancel_attrs}")
             else:
                 strings.append(self.cancel_url)
         strings.append(parse.urlencode(self.keywords, encoding="utf-8"))
