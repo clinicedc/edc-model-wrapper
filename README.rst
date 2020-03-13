@@ -98,8 +98,8 @@ for example to access original field values:
 .. |pypi| image:: https://img.shields.io/pypi/v/edc-model-wrapper.svg
     :target: https://pypi.python.org/pypi/edc-model-wrapper
     
-.. |travis| image:: https://travis-ci.org/clinicedc/edc-model-wrapper.svg?branch=develop
-    :target: https://travis-ci.org/clinicedc/edc-model-wrapper
+.. |travis| image:: https://travis-ci.com/clinicedc/edc-model-wrapper.svg?branch=develop
+    :target: https://travis-ci.com/clinicedc/edc-model-wrapper
     
 .. |codecov| image:: https://codecov.io/gh/clinicedc/edc-model-wrapper/branch/develop/graph/badge.svg
   :target: https://codecov.io/gh/clinicedc/edc-model-wrapper
